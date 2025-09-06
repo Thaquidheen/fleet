@@ -1,7 +1,9 @@
 package com.fleetmanagement.userservice.config;
 
+import com.fleetmanagement.userservice.repository.UserSessionRepository;
 import com.fleetmanagement.userservice.security.JwtAuthenticationEntryPoint;
 import com.fleetmanagement.userservice.security.JwtAuthenticationFilter;
+import com.fleetmanagement.userservice.service.JwtTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +20,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,18 +27,26 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtTokenService jwtTokenService;
+    private final UserSessionRepository sessionRepository;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+                          JwtTokenService jwtTokenService,
+                          UserSessionRepository sessionRepository) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtTokenService = jwtTokenService;
+        this.sessionRepository = sessionRepository;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtTokenService, sessionRepository);
     }
 
     @Bean
@@ -58,7 +67,7 @@ public class SecurityConfig {
                 );
 
         // Add JWT filter
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

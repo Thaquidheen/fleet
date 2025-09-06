@@ -1,0 +1,139 @@
+# User Service Configuration
+server:
+  port:  8085
+
+spring:
+  application:
+    name: user-service
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_service_db
+    username: fleet_user
+    password: fleet_password_2024
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: "fleet_redis_2024"
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  # Mail Configuration (for email verification)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: thaquidheen@gmail.com
+    password: 9656
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# JWT Configuration
+jwt:
+  secret: fleet-management-secret-key-for-jwt-token-signing-should-be-very-long-and-secure-and-is-at-least-64-bytes
+  expiration: 86400000    # 24 hours in milliseconds
+  refresh-expiration: 604800000  # 7 days in milliseconds
+  issuer: fleet-management-system
+  audience: fleet-management-users
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+    enabled: false  # Set to true when Eureka server is running
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    prefer-ip-address: true
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Application-specific Configuration
+app:
+  name: Fleet Management User Service
+  version: 1.0.0
+  description: User authentication and authorization service
+
+  # Security Configuration
+  security:
+    max-failed-attempts: 5
+    account-lock-duration: 30  # minutes
+    password-reset-token-validity: 1  # hour
+    email-verification-token-validity: 24  # hours
+
+  # Session Configuration
+  session:
+    max-concurrent-sessions: 3
+    session-timeout: 30  # minutes
+
+  # Rate Limiting
+  rate-limit:
+    login-attempts: 5
+    time-window: 900  # 15 minutes in seconds
+
+  # Email Configuration
+  email:
+    verification:
+      enabled: true
+      expiration: 3600000
+      base-url: http://localhost:3000
+    from:
+      name: "Fleet Management System"
+      address: "noreply@fleetmanagement.com"
+
+# Logging Configuration
+logging:
+  level:
+    com.fleetmanagement.userservice: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/user-service.log
+    max-size: 100MB
+    max-history: 30
