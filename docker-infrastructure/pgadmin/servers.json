@@ -1,0 +1,74 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "User Service DB",
+      "Group": "Fleet Management",
+      "Host": "user-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "user_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "User management database"
+    },
+    "2": {
+      "Name": "Company Service DB",
+      "Group": "Fleet Management",
+      "Host": "company-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "company_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "Company management database"
+    },
+    "3": {
+      "Name": "Vehicle Service DB",
+      "Group": "Fleet Management",
+      "Host": "vehicle-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "vehicle_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "Vehicle management database"
+    },
+    "4": {
+      "Name": "Device Service DB",
+      "Group": "Fleet Management",
+      "Host": "device-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "device_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "Device management database"
+    },
+    "5": {
+      "Name": "Location Service DB (TimescaleDB)",
+      "Group": "Fleet Management",
+      "Host": "location-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "location_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "Location and time-series data database"
+    },
+    "6": {
+      "Name": "Alert Service DB",
+      "Group": "Fleet Management",
+      "Host": "alert-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "alert_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "Alert management database"
+    },
+    "7": {
+      "Name": "Maintenance Service DB",
+      "Group": "Fleet Management",
+      "Host": "maintenance-service-db",
+      "Port": 5432,
+      "MaintenanceDB": "maintenance_service_db",
+      "Username": "fleet_user",
+      "SSLMode": "prefer",
+      "Comment": "Maintenance management database"
+    }
+  }
+}

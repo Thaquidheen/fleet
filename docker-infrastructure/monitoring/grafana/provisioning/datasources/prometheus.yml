@@ -1,0 +1,56 @@
+
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: PostgreSQL-Users
+    type: postgres
+    access: proxy
+    url: user-service-db:5432
+    database: user_service_db
+    user: fleet_user
+    secureJsonData:
+      password: fleet_password_2024
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+
+  - name: PostgreSQL-Vehicles
+    type: postgres
+    access: proxy
+    url: vehicle-service-db:5434
+    database: vehicle_service_db
+    user: fleet_user
+    secureJsonData:
+      password: fleet_password_2024
+    jsonData:
+      sslmode: disable
+
+  - name: TimescaleDB-Location
+    type: postgres
+    access: proxy
+    url: location-service-db:5436
+    database: location_service_db
+    user: fleet_user
+    secureJsonData:
+      password: fleet_password_2024
+    jsonData:
+      sslmode: disable
+      timescaledb: true
+
+  - name: ClickHouse-Analytics
+    type: grafana-clickhouse-datasource
+    access: proxy
+    url: http://analytics-service-db:8123
+    user: fleet_user
+    secureJsonData:
+      password: fleet_password_2024
+    jsonData:
+      defaultDatabase: analytics_service_db

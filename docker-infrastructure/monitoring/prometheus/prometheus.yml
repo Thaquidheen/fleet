@@ -1,0 +1,94 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alert-rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Fleet Management Services
+  - job_name: 'eureka-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['eureka-server:8761']
+
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8080']
+
+  - job_name: 'user-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['user-service:8082']
+
+  - job_name: 'company-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['company-service:8083']
+
+  - job_name: 'vehicle-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['vehicle-service:8084']
+
+  - job_name: 'device-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['device-service:8085']
+
+  - job_name: 'location-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['location-service:8086']
+
+  - job_name: 'message-processor'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['message-processor:8087']
+
+  - job_name: 'alert-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['alert-service:8088']
+
+  - job_name: 'analytics-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['analytics-service:8089']
+
+  - job_name: 'maintenance-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['maintenance-service:8090']
+
+  # Infrastructure Components
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['user-service-db:5432']
+
+  - job_name: 'clickhouse'
+    static_configs:
+      - targets: ['analytics-service-db:8123']
