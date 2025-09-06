@@ -177,7 +177,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     registry-fetch-interval-seconds: 30
-    enabled: false  # Disable until Eureka server is running
+    enabled: true  # Disable until Eureka server is running
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
     lease-renewal-interval-in-seconds: 30

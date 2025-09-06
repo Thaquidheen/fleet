@@ -39,7 +39,7 @@ public class SecurityConfig {
 
                 // Configure authorization rules
                 .authorizeExchange(exchanges -> exchanges
-                        // Public endpoints (no authentication required)
+                        // Public endpoints (no authentication required) - ORDER MATTERS!
                         .pathMatchers(
                                 "/health",
                                 "/actuator/**",
@@ -48,52 +48,31 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
                                 "/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",
                                 "/favicon.ico",
-                                "/api/gateway/health", // Allow gateway health checks
-                                "/fallback/**" ,// Allow fallback endpoints
-                                "/api/gateway/info"
+                                "/api/gateway/health",
+                                "/api/gateway/info",
+                                "/fallback/**"
                         ).permitAll()
 
-                        // Admin-only endpoints
+                        // Protected endpoints
                         .pathMatchers(
                                 "/api/admin/**",
                                 "/api/companies/*/settings",
-                                "/api/users/*/admin",
-                                "/api/system/**",
-
+                                "/api/users/**",
+                                "/api/vehicles/**",
+                                "/api/devices/**",
+                                "/api/locations/**",
+                                "/api/alerts/**",
+                                "/api/analytics/**",
+                                "/api/maintenance/**",
                                 "/api/gateway/services",
                                 "/api/gateway/status"
                         ).authenticated()
-
-                        // Manager-level endpoints
-                        .pathMatchers(
-                                "/api/companies/*/users",
-                                "/api/vehicles/*/assign",
-                                "/api/alerts/*/manage",
-                                "/api/reports/company/*"
-                        ).authenticated()
-
-                        // Driver-specific endpoints
-                        .pathMatchers(
-                                "/api/vehicles/*/status",
-                                "/api/locations/my",
-                                "/api/trips/my"
-                        ).authenticated()
-
-                        // General authenticated endpoints
-                        .pathMatchers(
-                                "/api/users/profile",
-                                "/api/vehicles/*/view",
-                                "/api/locations/view",
-                                "/api/alerts/view"
-                        ).authenticated()
-
-                        // All other API endpoints require authentication
-                        .pathMatchers("/api/**").authenticated()
 
                         // Allow all other requests (static resources, etc.)
                         .anyExchange().permitAll()

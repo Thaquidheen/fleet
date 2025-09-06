@@ -6,6 +6,7 @@ spring:
   application:
     name: user-service
 
+
   # Database Configuration
   datasource:
     url: jdbc:postgresql://localhost:5432/user_service_db
@@ -66,7 +67,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     registry-fetch-interval-seconds: 30
-    enabled: false  # Set to true when Eureka server is running
+    enabled: true  # Set to true when Eureka server is running
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
     lease-renewal-interval-in-seconds: 30

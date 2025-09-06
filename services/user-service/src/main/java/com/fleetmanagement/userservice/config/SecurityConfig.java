@@ -56,15 +56,24 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(authz -> authz
-                        // Public endpoints
-                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/verify-email", "/auth/resend-verification").permitAll()
+                        // Allow CORS preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public auth endpoints (add register)
+                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/verify-email", "/auth/resend-verification", "/auth/register").permitAll()
+
+                        // If gateway does not strip /api prefix, also permit these:
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/verify-email", "/api/auth/resend-verification", "/api/auth/register").permitAll()
+
+                        // Observability and docs
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll() // For testing only
+                        .requestMatchers("/h2-console/**").permitAll()
 
-                        // All other endpoints require authentication
+                        // Everything else secured
                         .anyRequest().authenticated()
                 );
+
 
         // Add JWT filter
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
