@@ -71,7 +71,7 @@
          <module>services/api-gateway</module>
 
         <!-- Core Business Services -->
-        <!-- <module>services/user-service</module> -->
+         <module>services/user-service</module>
         <!-- <module>services/company-service</module> -->
         <!-- <module>services/vehicle-service</module> -->
         <!-- <module>services/device-service</module> -->

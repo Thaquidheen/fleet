@@ -52,8 +52,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:your-email@gmail.com}
-    password: ${MAIL_PASSWORD:your-app-password}
+    username: your-email@gmail.com
+    password: your-app-password
     properties:
       mail:
         smtp:
@@ -90,15 +90,13 @@ management:
       prometheus:
         enabled: true
 
-# JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
-  expiration: 86400000 # 24 hours in milliseconds
-  refresh-expiration: 604800000 # 7 days in milliseconds
+  secret: mySecretKey123456789012345678901234567890FleetManagementSystemSecretKey
+  expiration: 86400000
+  refresh-expiration: 604800000
   issuer: fleet-management-system
   audience: fleet-management-users
 
-# Application Configuration
 app:
   security:
     password:
@@ -109,15 +107,15 @@ app:
       require-special-chars: true
     account-lockout:
       max-attempts: 5
-      lockout-duration: 900000 # 15 minutes
+      lockout-duration: 900000
     session:
       max-concurrent-sessions: 3
 
   email:
     verification:
       enabled: true
-      expiration: 3600000 # 1 hour
-      base-url: ${APP_BASE_URL:http://localhost:3000}
+      expiration: 3600000
+      base-url: http://localhost:3000
 
   pagination:
     default-page-size: 20
@@ -134,7 +132,6 @@ logging:
   file:
     name: logs/user-service.log
 
-# Actuator Info
 info:
   app:
     name: User Service

@@ -2,6 +2,9 @@ package com.fleetmanagement.userservice.controller;
 
 import com.fleetmanagement.userservice.domain.enums.UserRole;
 import com.fleetmanagement.userservice.domain.enums.UserStatus;
+import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
+import com.fleetmanagement.userservice.dto.request.UpdateUserRequest;
+import com.fleetmanagement.userservice.dto.request.UserSearchRequest;
 import com.fleetmanagement.userservice.dto.response.UserResponse;
 import com.fleetmanagement.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

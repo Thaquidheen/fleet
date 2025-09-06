@@ -1,9 +1,12 @@
-// UserService.java
+// UserService.java - Complete Version with All Dependencies
 package com.fleetmanagement.userservice.service;
 
 import com.fleetmanagement.userservice.domain.entity.User;
 import com.fleetmanagement.userservice.domain.enums.UserRole;
 import com.fleetmanagement.userservice.domain.enums.UserStatus;
+import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
+import com.fleetmanagement.userservice.dto.request.UpdateUserRequest;
+import com.fleetmanagement.userservice.dto.request.UserSearchRequest;
 import com.fleetmanagement.userservice.dto.response.UserResponse;
 import com.fleetmanagement.userservice.exception.ResourceNotFoundException;
 import com.fleetmanagement.userservice.exception.UserAlreadyExistsException;
@@ -12,17 +15,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -35,16 +40,19 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final CacheService cacheService;
+    private final PasswordService passwordService;
 
     @Autowired
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        EmailService emailService,
-                       CacheService cacheService) {
+                       CacheService cacheService,
+                       PasswordService passwordService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.cacheService = cacheService;
+        this.passwordService = passwordService;
     }
 
     /**
@@ -52,6 +60,12 @@ public class UserService {
      */
     public UserResponse createUser(CreateUserRequest request, UUID createdBy) {
         logger.info("Creating new user with username: {}", request.getUsername());
+
+        // Validate password strength
+        if (!passwordService.isValidPassword(request.getPassword())) {
+            throw new IllegalArgumentException("Password does not meet requirements: " +
+                    passwordService.getPasswordRequirements());
+        }
 
         // Validate uniqueness
         validateUserUniqueness(request.getUsername(), request.getEmail(), null);
@@ -74,6 +88,7 @@ public class UserService {
         user.setUpdatedBy(createdBy);
         user.setTimezone(request.getTimezone() != null ? request.getTimezone() : "UTC");
         user.setLanguage(request.getLanguage() != null ? request.getLanguage() : "en");
+        user.setLastPasswordChange(LocalDateTime.now());
 
         // Generate email verification token
         String verificationToken = UUID.randomUUID().toString();
@@ -93,8 +108,12 @@ public class UserService {
                     savedUser.getEmail(), e.getMessage());
         }
 
+        // Cache the user
+        UserResponse response = convertToUserResponse(savedUser);
+        cacheService.cacheUser(savedUser.getId(), response);
+
         logger.info("User created successfully with ID: {}", savedUser.getId());
-        return convertToUserResponse(savedUser);
+        return response;
     }
 
     /**
@@ -102,8 +121,19 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public UserResponse getUserById(UUID userId) {
+        // Check cache first
+        Object cachedUser = cacheService.getCachedUser(userId);
+        if (cachedUser instanceof UserResponse) {
+            return (UserResponse) cachedUser;
+        }
+
         User user = findUserById(userId);
-        return convertToUserResponse(user);
+        UserResponse response = convertToUserResponse(user);
+
+        // Cache the result
+        cacheService.cacheUser(userId, response);
+
+        return response;
     }
 
     /**
@@ -208,6 +238,7 @@ public class UserService {
 
         // Clear cache
         cacheService.evictUser(userId);
+        cacheService.evictUserPermissions(userId);
 
         logger.info("User role updated successfully for ID: {}", savedUser.getId());
         return convertToUserResponse(savedUser);
@@ -251,6 +282,7 @@ public class UserService {
 
         // Clear cache
         cacheService.evictUser(userId);
+        cacheService.evictUserPermissions(userId);
 
         logger.info("User deleted successfully with ID: {}", userId);
     }
@@ -349,6 +381,69 @@ public class UserService {
             logger.error("Failed to resend verification email to {}: {}", email, e.getMessage());
             throw new RuntimeException("Failed to send verification email", e);
         }
+
+        // Clear cache
+        cacheService.evictUser(user.getId());
+    }
+
+    /**
+     * Request password reset
+     */
+    public void requestPasswordReset(String email) {
+        logger.info("Password reset request for email: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        // Generate reset token
+        String resetToken = UUID.randomUUID().toString();
+        user.setPasswordResetToken(resetToken);
+        user.setPasswordResetExpiry(LocalDateTime.now().plusHours(1)); // 1 hour expiry
+
+        userRepository.save(user);
+
+        // Send reset email
+        try {
+            emailService.sendPasswordReset(user.getEmail(), user.getFullName(), resetToken);
+            logger.info("Password reset email sent to: {}", email);
+        } catch (Exception e) {
+            logger.error("Failed to send password reset email to {}: {}", email, e.getMessage());
+            throw new RuntimeException("Failed to send password reset email", e);
+        }
+    }
+
+    /**
+     * Reset password with token
+     */
+    public void resetPassword(String resetToken, String newPassword) {
+        logger.info("Password reset attempt with token");
+
+        // Validate password strength
+        if (!passwordService.isValidPassword(newPassword)) {
+            throw new IllegalArgumentException("Password does not meet requirements: " +
+                    passwordService.getPasswordRequirements());
+        }
+
+        User user = userRepository.findByPasswordResetToken(resetToken)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid reset token"));
+
+        if (user.isPasswordResetExpired()) {
+            throw new IllegalArgumentException("Reset token has expired");
+        }
+
+        // Update password
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setLastPasswordChange(LocalDateTime.now());
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpiry(null);
+        user.setForcePasswordChange(false);
+
+        userRepository.save(user);
+
+        // Clear cache
+        cacheService.evictUser(user.getId());
+
+        logger.info("Password reset successfully for user ID: {}", user.getId());
     }
 
     /**
@@ -363,17 +458,105 @@ public class UserService {
             stats.put("activeUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.ACTIVE));
             stats.put("inactiveUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.INACTIVE));
             stats.put("pendingUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.PENDING_VERIFICATION));
+            stats.put("lockedUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.LOCKED));
+            stats.put("suspendedUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.SUSPENDED));
 
             // Role statistics
             for (UserRole role : UserRole.values()) {
                 stats.put(role.name().toLowerCase() + "Count",
                         userRepository.countByCompanyIdAndRole(companyId, role));
             }
+
+            // Activity statistics
+            LocalDateTime lastWeek = LocalDateTime.now().minusDays(7);
+            stats.put("activeUsersLastWeek", userRepository.countActiveUsersByCompanySince(companyId, lastWeek));
         } else {
             stats.put("totalUsers", userRepository.count());
+            LocalDateTime lastWeek = LocalDateTime.now().minusDays(7);
+            stats.put("activeUsersLastWeek", userRepository.countActiveUsersSince(lastWeek));
         }
 
         return stats;
+    }
+
+    /**
+     * Check if user can access another user's data
+     */
+    public boolean canAccessUser(String currentUserIdStr, UUID targetUserId) {
+        try {
+            UUID currentUserId = UUID.fromString(currentUserIdStr);
+
+            // Users can always access their own data
+            if (currentUserId.equals(targetUserId)) {
+                return true;
+            }
+
+            User currentUser = findUserById(currentUserId);
+
+            // Super admins can access any user
+            if (currentUser.getRole() == UserRole.SUPER_ADMIN) {
+                return true;
+            }
+
+            // Company admins can access users in their company
+            if (currentUser.getRole() == UserRole.COMPANY_ADMIN) {
+                User targetUser = findUserById(targetUserId);
+                return currentUser.getCompanyId().equals(targetUser.getCompanyId());
+            }
+
+            return false;
+        } catch (Exception e) {
+            logger.error("Error checking user access: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check if user can modify another user
+     */
+    public boolean canModifyUser(String currentUserIdStr, UUID targetUserId) {
+        try {
+            UUID currentUserId = UUID.fromString(currentUserIdStr);
+
+            // Users can modify their own data (with restrictions)
+            if (currentUserId.equals(targetUserId)) {
+                return true;
+            }
+
+            User currentUser = findUserById(currentUserId);
+
+            // Super admins can modify any user
+            if (currentUser.getRole() == UserRole.SUPER_ADMIN) {
+                return true;
+            }
+
+            // Company admins can modify users in their company (except other admins)
+            if (currentUser.getRole() == UserRole.COMPANY_ADMIN) {
+                User targetUser = findUserById(targetUserId);
+                return currentUser.getCompanyId().equals(targetUser.getCompanyId()) &&
+                        targetUser.getRole() != UserRole.SUPER_ADMIN &&
+                        targetUser.getRole() != UserRole.COMPANY_ADMIN;
+            }
+
+            return false;
+        } catch (Exception e) {
+            logger.error("Error checking user modification rights: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check if user belongs to company
+     */
+    public boolean belongsToCompany(String userIdStr, UUID companyId) {
+        try {
+            UUID userId = UUID.fromString(userIdStr);
+            User user = findUserById(userId);
+            return user.getCompanyId().equals(companyId);
+        } catch (Exception e) {
+            logger.error("Error checking company membership: {}", e.getMessage());
+            return false;
+        }
     }
 
     // Helper methods

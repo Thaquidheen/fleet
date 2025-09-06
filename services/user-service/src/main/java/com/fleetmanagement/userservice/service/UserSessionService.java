@@ -1,6 +1,7 @@
 package com.fleetmanagement.userservice.service;
 
 import com.fleetmanagement.userservice.domain.entity.User;
+import com.fleetmanagement.userservice.domain.entity.UserSession;
 import com.fleetmanagement.userservice.domain.enums.SessionStatus;
 import com.fleetmanagement.userservice.repository.UserSessionRepository;
 import org.slf4j.Logger;

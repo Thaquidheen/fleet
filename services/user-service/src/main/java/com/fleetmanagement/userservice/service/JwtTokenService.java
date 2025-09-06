@@ -1,4 +1,4 @@
-// JwtTokenService.java
+// JwtTokenService.java - For JJWT 0.12.3
 package com.fleetmanagement.userservice.service;
 
 import com.fleetmanagement.userservice.domain.entity.User;
@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -59,13 +58,13 @@ public class JwtTokenService {
         claims.put("tokenType", "ACCESS");
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(user.getId().toString())
-                .setIssuer(issuer)
-                .setAudience(audience)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .claims(claims)
+                .subject(user.getId().toString())
+                .issuer(issuer)
+                .audience().add(audience).and()
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -82,13 +81,13 @@ public class JwtTokenService {
         claims.put("tokenType", "REFRESH");
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(user.getId().toString())
-                .setIssuer(issuer)
-                .setAudience(audience)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .claims(claims)
+                .subject(user.getId().toString())
+                .issuer(issuer)
+                .audience().add(audience).and()
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -175,12 +174,12 @@ public class JwtTokenService {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+            Jwts.parser()
+                    .verifyWith(secretKey)
                     .requireIssuer(issuer)
                     .requireAudience(audience)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (SecurityException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());
@@ -245,11 +244,11 @@ public class JwtTokenService {
      */
     private Claims getClaimsFromToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+            return Jwts.parser()
+                    .verifyWith(secretKey)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (Exception e) {
             logger.error("Error extracting claims from token: {}", e.getMessage());
             throw new IllegalArgumentException("Invalid token", e);
