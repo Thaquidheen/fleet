@@ -36,6 +36,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
     private final UserSessionService sessionService;
+    private final CacheService cacheService;
 
     @Value("${app.security.account-lockout.max-attempts:5}")
     private int maxFailedAttempts;
@@ -57,12 +58,13 @@ public class AuthenticationService {
                                  UserSessionRepository sessionRepository,
                                  PasswordEncoder passwordEncoder,
                                  JwtTokenService jwtTokenService,
-                                 UserSessionService sessionService) {
+                                 UserSessionService sessionService, CacheService cacheService) {
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenService = jwtTokenService;
         this.sessionService = sessionService;
+        this.cacheService = cacheService;
     }
 
     public AuthenticationResponse register(CreateUserRequest request, String ipAddress, String userAgent) {
@@ -168,10 +170,13 @@ public class AuthenticationService {
         String accessToken = jwtTokenService.generateAccessToken(user, tempSessionId);
         String refreshToken = jwtTokenService.generateRefreshToken(user, tempSessionId);
 
-        // Update session with tokens
         session.setSessionToken(accessToken);
         session.setRefreshToken(refreshToken);
         UserSession savedSession = sessionRepository.save(session);
+
+// Cache the session
+        cacheService.cacheSession(accessToken, savedSession);
+
         if (!tempSessionId.equals(savedSession.getId().toString())) {
             accessToken = jwtTokenService.generateAccessToken(user, savedSession.getId().toString());
             refreshToken = jwtTokenService.generateRefreshToken(user, savedSession.getId().toString());
@@ -179,6 +184,9 @@ public class AuthenticationService {
             savedSession.setSessionToken(accessToken);
             savedSession.setRefreshToken(refreshToken);
             sessionRepository.save(savedSession);
+
+            // Cache the updated session
+            cacheService.cacheSession(accessToken, savedSession);
         }
 
         // Update last login
