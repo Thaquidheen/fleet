@@ -1,6 +1,6 @@
 // AuthenticationService.java
 package com.fleetmanagement.userservice.service;
-
+import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
 import com.fleetmanagement.userservice.domain.entity.User;
 import com.fleetmanagement.userservice.domain.entity.UserSession;
 import com.fleetmanagement.userservice.domain.enums.SessionStatus;
@@ -56,6 +56,31 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenService = jwtTokenService;
         this.sessionService = sessionService;
+    }
+
+    public AuthenticationResponse register(CreateUserRequest request, String ipAddress, String userAgent) {
+        logger.info("Registration attempt for email: {}", request.getEmail());
+        // Check if user already exists
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new AuthenticationFailedException("User already exists with this email");
+        }
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new AuthenticationFailedException("Username is already taken");
+        }
+
+        // Create new user
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .status(UserStatus.PENDING_VERIFICATION)
+                .emailVerified(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .failedLoginAttempts(0);
     }
 
     /**

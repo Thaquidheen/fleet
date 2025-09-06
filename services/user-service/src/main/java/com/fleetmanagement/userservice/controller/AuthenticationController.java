@@ -1,6 +1,7 @@
 package com.fleetmanagement.userservice.controller;
 
 import com.fleetmanagement.userservice.dto.request.ChangePasswordRequest;
+import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
 import com.fleetmanagement.userservice.dto.request.LoginRequest;
 import com.fleetmanagement.userservice.dto.request.RefreshTokenRequest;
 import com.fleetmanagement.userservice.dto.response.AuthenticationResponse;
@@ -42,6 +43,23 @@ public class AuthenticationController {
         this.userService = userService;
         this.jwtTokenService = jwtTokenService;
     }
+    @PostMapping("/register")
+    @Operation(summary = "User registration", description = "Register a new user")
+    @ApiResponse(responseCode = "201", description = "User registered successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid registration data")
+    @ApiResponse(responseCode = "409", description = "User already exists")
+    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody CreateUserRequest request,
+                                                           HttpServletRequest httpRequest) {
+        logger.info("Registration request for: {}", request.getEmail());
+
+        String ipAddress = getClientIpAddress(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+        AuthenticationResponse response = authenticationService.register(request, ipAddress, userAgent);
+
+        return ResponseEntity.status(201).body(response);
+    }
+
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user and return JWT tokens")
@@ -58,6 +76,8 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(response);
     }
+
+
 
     @PostMapping("/refresh")
     @Operation(summary = "Refresh access token", description = "Generate new access token using refresh token")
