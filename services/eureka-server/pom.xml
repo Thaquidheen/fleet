@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Parent POM Reference -->
+	<parent>
+		<groupId>com.fleetmanagement</groupId>
+		<artifactId>fleet-management-system</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+
+	<!-- Module Information -->
+	<artifactId>eureka-server</artifactId>
+	<packaging>jar</packaging>
+	<name>Eureka Server</name>
+	<description>Service Discovery Server for Fleet Management System</description>
+
+	<!-- Properties -->
+	<properties>
+		<!-- CORRECTED: Match your actual package name -->
+		<start-class>com.fleetmanagement.eurekaserver.EurekaServerApplication</start-class>
+	</properties>
+
+	<!-- Dependencies -->
+	<dependencies>
+		<!-- Eureka Server -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+		</dependency>
+
+		<!-- Spring Boot Actuator for Health Checks -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Monitoring with Micrometer/Prometheus -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+		<!-- Testing Dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<!-- Build Configuration -->
+	<build>
+		<finalName>eureka-server</finalName>
+
+		<plugins>
+			<!-- Spring Boot Maven Plugin -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!-- EXPLICIT main class configuration -->
+					<mainClass>com.fleetmanagement.eurekaserver.EurekaServerApplication</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
