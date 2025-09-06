@@ -1,5 +1,5 @@
-// AuthenticationService.java
 package com.fleetmanagement.userservice.service;
+
 import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
 import com.fleetmanagement.userservice.domain.entity.User;
 import com.fleetmanagement.userservice.domain.entity.UserSession;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,6 +46,12 @@ public class AuthenticationService {
     @Value("${app.security.session.max-concurrent-sessions:3}")
     private int maxConcurrentSessions;
 
+    @Value("${jwt.expiration:86400000}")  // 24 hours default
+    private long jwtExpiration;
+
+    @Value("${jwt.refresh-expiration:604800000}")  // 7 days default
+    private long refreshExpiration;
+
     @Autowired
     public AuthenticationService(UserRepository userRepository,
                                  UserSessionRepository sessionRepository,
@@ -60,6 +67,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse register(CreateUserRequest request, String ipAddress, String userAgent) {
         logger.info("Registration attempt for email: {}", request.getEmail());
+
         // Check if user already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new AuthenticationFailedException("User already exists with this email");
@@ -76,13 +84,35 @@ public class AuthenticationService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .role(request.getRole())                    // ADD: Missing role
+                .companyId(request.getCompanyId())          // ADD: Missing companyId
                 .status(UserStatus.PENDING_VERIFICATION)
                 .emailVerified(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .failedLoginAttempts(0);
-    }
+                .failedLoginAttempts(0)
+                .lastPasswordChange(LocalDateTime.now())
+                .build();                                   // ADD: Missing .build()
 
+        // Save user
+        User savedUser = userRepository.save(user);
+        logger.info("User created successfully with ID: {}", savedUser.getId());
+
+        // Optional: Send email verification
+        // emailService.sendEmailVerification(savedUser.getEmail(), savedUser.getFullName(), verificationToken);
+
+        // Return success response WITHOUT tokens
+        return AuthenticationResponse.builder()
+                .success(true)
+                .message("User registered successfully. Please log in to continue.")
+                .userId(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole())
+                .companyId(savedUser.getCompanyId())
+                .emailVerified(savedUser.getEmailVerified())
+                .requiresPasswordChange(false)
+                // NO session, tokens, or session-related fields
+                .build();
+    }
     /**
      * Authenticate user and create session
      */
@@ -120,17 +150,36 @@ public class AuthenticationService {
         // Manage concurrent sessions
         manageConcurrentSessions(user);
 
-        // Create new session
-        UserSession session = sessionService.createSession(user, ipAddress, userAgent);
+        // Create session WITHOUT saving it first
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = now.plusSeconds(jwtExpiration / 1000);
+        LocalDateTime refreshExpiresAt = now.plusSeconds(refreshExpiration / 1000);
 
-        // Generate tokens
-        String accessToken = jwtTokenService.generateAccessToken(user, session.getId().toString());
-        String refreshToken = jwtTokenService.generateRefreshToken(user, session.getId().toString());
+        UserSession session = new UserSession();
+        session.setUser(user);
+        session.setExpiresAt(expiresAt);
+        session.setRefreshExpiresAt(refreshExpiresAt);
+        session.setIpAddress(ipAddress);
+        session.setUserAgent(userAgent);
+        session.setStatus(SessionStatus.ACTIVE);
+        session.setLastAccessed(now);
+
+        String tempSessionId = UUID.randomUUID().toString();
+        String accessToken = jwtTokenService.generateAccessToken(user, tempSessionId);
+        String refreshToken = jwtTokenService.generateRefreshToken(user, tempSessionId);
 
         // Update session with tokens
         session.setSessionToken(accessToken);
         session.setRefreshToken(refreshToken);
-        sessionRepository.save(session);
+        UserSession savedSession = sessionRepository.save(session);
+        if (!tempSessionId.equals(savedSession.getId().toString())) {
+            accessToken = jwtTokenService.generateAccessToken(user, savedSession.getId().toString());
+            refreshToken = jwtTokenService.generateRefreshToken(user, savedSession.getId().toString());
+
+            savedSession.setSessionToken(accessToken);
+            savedSession.setRefreshToken(refreshToken);
+            sessionRepository.save(savedSession);
+        }
 
         // Update last login
         user.setLastLogin(LocalDateTime.now());
@@ -149,7 +198,7 @@ public class AuthenticationService {
                 .role(user.getRole())
                 .companyId(user.getCompanyId())
                 .emailVerified(user.getEmailVerified())
-                .sessionId(session.getId())
+                .sessionId(savedSession.getId())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
@@ -159,7 +208,6 @@ public class AuthenticationService {
                 .message("Authentication successful")
                 .build();
     }
-
     /**
      * Refresh access token
      */
@@ -430,8 +478,7 @@ public class AuthenticationService {
         user.incrementFailedLoginAttempts();
 
         if (user.getFailedLoginAttempts() >= maxFailedAttempts) {
-            LocalDateTime lockUntil = LocalDateTime.now().plusSeconds(lockoutDuration / 1000);
-            user.lockAccount(lockUntil);
+            user.lockAccount(lockoutDuration);  // Pass the long duration directly
             logger.warn("Account locked for user ID: {} due to {} failed login attempts",
                     user.getId(), user.getFailedLoginAttempts());
         }
@@ -490,3 +537,4 @@ public class AuthenticationService {
         return !user.getEmailVerified() && user.getStatus() == UserStatus.PENDING_VERIFICATION;
     }
 }
+

@@ -25,11 +25,11 @@ public class UserSession {
     private UUID id;
 
     @NotBlank(message = "Session token is required")
-    @Column(name = "session_token", unique = true, nullable = false, length = 500)
+    @Column(name = "session_token", unique = true, nullable = false, length = 2000)
     private String sessionToken;
 
     @NotBlank(message = "Refresh token is required")
-    @Column(name = "refresh_token", unique = true, nullable = false, length = 500)
+    @Column(name = "refresh_token", unique = true, nullable = false, length = 2000)
     private String refreshToken;
 
     @NotNull(message = "User is required")
