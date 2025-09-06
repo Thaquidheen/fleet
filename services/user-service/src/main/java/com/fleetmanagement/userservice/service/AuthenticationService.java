@@ -282,28 +282,57 @@ public class AuthenticationService {
      * Logout user and invalidate session
      */
     public void logout(String sessionToken, boolean logoutAllSessions) {
-        logger.info("Logout attempt");
+        logger.info("Logout attempt for session");
 
-        if (sessionToken == null) {
+        if (sessionToken == null || sessionToken.trim().isEmpty()) {
             throw new IllegalArgumentException("Session token is required");
         }
 
-        // Find session by token
-        UserSession session = sessionRepository.findBySessionToken(sessionToken)
-                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+        try {
+            // Find session by token
+            UserSession session = sessionRepository.findBySessionToken(sessionToken)
+                    .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
 
-        if (logoutAllSessions) {
-            // Revoke all active sessions for the user
-            sessionRepository.revokeAllActiveSessionsByUserId(session.getUser().getId());
-            logger.info("All sessions revoked for user ID: {}", session.getUser().getId());
-        } else {
-            // Revoke only current session
-            session.revoke();
-            sessionRepository.save(session);
-            logger.info("Session revoked: {}", session.getId());
+            if (logoutAllSessions) {
+                // Get all active sessions for this user
+                List<UserSession> userSessions = sessionRepository
+                        .findActiveSessionsByUserId(session.getUser().getId(), LocalDateTime.now());
+
+                // Revoke all active sessions for the user
+                sessionRepository.revokeAllActiveSessionsByUserId(session.getUser().getId());
+
+                // Remove all sessions from cache
+                for (UserSession userSession : userSessions) {
+                    if (userSession.getSessionToken() != null) {
+                        cacheService.evictSession(userSession.getSessionToken());
+                    }
+                }
+
+                logger.info("All sessions revoked for user ID: {}", session.getUser().getId());
+            } else {
+                // Revoke only current session
+                session.revoke();
+                sessionRepository.save(session);
+
+                // Remove from cache
+                cacheService.evictSession(sessionToken);
+
+                logger.info("Session revoked: {}", session.getId());
+            }
+
+            // Optional: Clear user cache if logging out from all sessions
+            if (logoutAllSessions) {
+                cacheService.evictUser(session.getUser().getId());
+            }
+
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Logout attempted with invalid session token");
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error during logout: {}", e.getMessage());
+            throw new RuntimeException("Logout failed", e);
         }
     }
-
     /**
      * Validate session token
      */

@@ -77,7 +77,58 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Get current user profile", description = "Get current authenticated user information")
+    @ApiResponse(responseCode = "200", description = "Current user information")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        logger.info("Get current user profile request");
 
+        try {
+            String token = jwtTokenService.extractTokenFromHeader(authHeader);
+            if (token == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Get user ID from JWT token
+            UUID userId = jwtTokenService.getUserIdFromToken(token);
+
+            // Get user details
+            UserResponse userResponse = userService.getUserById(userId);
+
+            return ResponseEntity.ok(userResponse);
+        } catch (Exception e) {
+            logger.error("Error getting current user: {}", e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PutMapping("/me")
+    @Operation(summary = "Update current user profile", description = "Update current authenticated user information")
+    @ApiResponse(responseCode = "200", description = "User profile updated successfully")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponse> updateCurrentUser(@RequestHeader("Authorization") String authHeader,
+                                                          @Valid @RequestBody UpdateUserProfileRequest request) {
+        logger.info("Update current user profile request");
+
+        try {
+            String token = jwtTokenService.extractTokenFromHeader(authHeader);
+            if (token == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Get user ID from JWT token
+            UUID userId = jwtTokenService.getUserIdFromToken(token);
+
+            // Update user profile
+            UserResponse userResponse = userService.updateUserProfile(userId, request);
+
+            return ResponseEntity.ok(userResponse);
+        } catch (Exception e) {
+            logger.error("Error updating current user: {}", e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
 
     @PostMapping("/refresh")
     @Operation(summary = "Refresh access token", description = "Generate new access token using refresh token")
@@ -100,9 +151,62 @@ public class AuthenticationController {
         logger.info("Logout request");
 
         String token = jwtTokenService.extractTokenFromHeader(authHeader);
-        authenticationService.logout(token, logoutAllSessions);
+        if (token == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid authorization header"));
+        }
 
-        return ResponseEntity.ok(Map.of("message", "Logout successful"));
+        try {
+            authenticationService.logout(token, logoutAllSessions);
+
+            String message = logoutAllSessions ?
+                    "Successfully logged out from all sessions" :
+                    "Successfully logged out";
+
+            return ResponseEntity.ok(Map.of("message", message));
+        } catch (Exception e) {
+            logger.error("Logout failed: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Logout failed"));
+        }
+    }
+
+    @PostMapping("/logout-all")
+    @Operation(summary = "Logout from all sessions", description = "Invalidate all user sessions")
+    @ApiResponse(responseCode = "200", description = "Logout successful from all sessions")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> logoutAll(@RequestHeader("Authorization") String authHeader) {
+        logger.info("Logout all sessions request");
+
+        String token = jwtTokenService.extractTokenFromHeader(authHeader);
+        if (token == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid authorization header"));
+        }
+
+        try {
+            authenticationService.logout(token, true);
+            return ResponseEntity.ok(Map.of("message", "Successfully logged out from all sessions"));
+        } catch (Exception e) {
+            logger.error("Logout all failed: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Logout failed"));
+        }
+    }
+
+    // Add this helper method to your AuthenticationController
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+
+        return request.getRemoteAddr();
     }
 
     @PostMapping("/change-password")
