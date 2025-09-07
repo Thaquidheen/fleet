@@ -109,7 +109,7 @@ public class UserController {
         logger.info("Update user request for ID: {}", userId);
 
         UUID updatedBy = UUID.fromString(authentication.getName());
-        UserResponse response = userService.updateUser(userId, request, updatedBy);
+        UserResponse response = userService.updateUserProfile(userId, request);
 
         return ResponseEntity.ok(response);
     }
