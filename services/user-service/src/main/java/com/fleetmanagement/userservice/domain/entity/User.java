@@ -1,5 +1,6 @@
 package com.fleetmanagement.userservice.domain.entity;
 
+import com.fleetmanagement.userservice.config.PostgreSQLEnumType;
 import com.fleetmanagement.userservice.domain.enums.UserRole;
 import com.fleetmanagement.userservice.domain.enums.UserStatus;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 import lombok.*;
 
@@ -65,12 +67,14 @@ public class User {
 
     @NotNull(message = "User role is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, columnDefinition = "user_role")
+    @Column(name = "role", nullable = false)
+    @Type(PostgreSQLEnumType.class)
     private UserRole role;
 
     @NotNull(message = "User status is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, columnDefinition = "user_status")
+    @Column(name = "status", nullable = false)
+    @Type(PostgreSQLEnumType.class)
     private UserStatus status;
 
     @Column(name = "company_id")

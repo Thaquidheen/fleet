@@ -1,11 +1,10 @@
 # User Service Configuration
 server:
-  port:  8085
+  port: 8085
 
 spring:
   application:
     name: user-service
-
 
   # Database Configuration
   datasource:
@@ -14,16 +13,29 @@ spring:
     password: fleet_password_2024
     driver-class-name: org.postgresql.Driver
 
-  # JPA Configuration
+  # JPA Configuration - SCHEMA MANAGED BY FLYWAY
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate  # Only validate, never create/update schema
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+  # Flyway Configuration - MANAGES DATABASE SCHEMA
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+    clean-disabled: true  # Prevent accidental data loss
 
   # Redis Configuration
   data:
@@ -38,7 +50,7 @@ spring:
           max-idle: 8
           min-idle: 0
 
-  # Mail Configuration (for email verification)
+  # Mail Configuration
   mail:
     host: smtp.gmail.com
     port: 587
@@ -54,8 +66,8 @@ spring:
 # JWT Configuration
 jwt:
   secret: fleet-management-secret-key-for-jwt-token-signing-should-be-very-long-and-secure-and-is-at-least-64-bytes
-  expiration: 86400000    # 24 hours in milliseconds
-  refresh-expiration: 604800000  # 7 days in milliseconds
+  expiration: 86400000
+  refresh-expiration: 604800000
   issuer: fleet-management-system
   audience: fleet-management-users
 
@@ -67,7 +79,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     registry-fetch-interval-seconds: 30
-    enabled: true  # Set to true when Eureka server is running
+    enabled: true
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
     lease-renewal-interval-in-seconds: 30
@@ -79,62 +91,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,flyway
   endpoint:
     health:
       enabled: true
       show-details: always
-    prometheus:
+    flyway:
       enabled: true
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-
-# Application-specific Configuration
-app:
-  name: Fleet Management User Service
-  version: 1.0.0
-  description: User authentication and authorization service
-
-  # Security Configuration
-  security:
-    max-failed-attempts: 5
-    account-lock-duration: 30  # minutes
-    password-reset-token-validity: 1  # hour
-    email-verification-token-validity: 24  # hours
-
-  # Session Configuration
-  session:
-    max-concurrent-sessions: 3
-    session-timeout: 30  # minutes
-
-  # Rate Limiting
-  rate-limit:
-    login-attempts: 5
-    time-window: 900  # 15 minutes in seconds
-
-  # Email Configuration
-  email:
-    verification:
-      enabled: true
-      expiration: 3600000
-      base-url: http://localhost:3000
-    from:
-      name: "Fleet Management System"
-      address: "noreply@fleetmanagement.com"
 
 # Logging Configuration
 logging:
   level:
     com.fleetmanagement.userservice: DEBUG
-    org.springframework.security: DEBUG
+    org.flywaydb: INFO
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: logs/user-service.log
-    max-size: 100MB
-    max-history: 30

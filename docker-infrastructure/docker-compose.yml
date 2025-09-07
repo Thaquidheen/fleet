@@ -41,7 +41,6 @@ services:
       - "5432:5432"
     volumes:
       - user_service_db_data:/var/lib/postgresql/data
-      - ./init-scripts/user-service-init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - fleet-network
     restart: unless-stopped
