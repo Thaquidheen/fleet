@@ -1,10 +1,8 @@
 package com.fleetmanagement.userservice.controller;
 
-import com.fleetmanagement.userservice.dto.request.ChangePasswordRequest;
-import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
-import com.fleetmanagement.userservice.dto.request.LoginRequest;
-import com.fleetmanagement.userservice.dto.request.RefreshTokenRequest;
+import com.fleetmanagement.userservice.dto.request.*;
 import com.fleetmanagement.userservice.dto.response.AuthenticationResponse;
+import com.fleetmanagement.userservice.dto.response.UserResponse;
 import com.fleetmanagement.userservice.service.AuthenticationService;
 import com.fleetmanagement.userservice.service.JwtTokenService;
 import com.fleetmanagement.userservice.service.UserService;
@@ -108,7 +106,7 @@ public class AuthenticationController {
     @ApiResponse(responseCode = "200", description = "User profile updated successfully")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> updateCurrentUser(@RequestHeader("Authorization") String authHeader,
-                                                          @Valid @RequestBody UpdateUserProfileRequest request) {
+                                                          @Valid @RequestBody UpdateUserRequest request) {
         logger.info("Update current user profile request");
 
         try {
@@ -295,17 +293,17 @@ public class AuthenticationController {
     }
 
     // Helper method to extract client IP address
-    private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-
-        return request.getRemoteAddr();
-    }
+//    private String getClientIpAddress(HttpServletRequest request) {
+//        String xForwardedFor = request.getHeader("X-Forwarded-For");
+//        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+//            return xForwardedFor.split(",")[0].trim();
+//        }
+//
+//        String xRealIp = request.getHeader("X-Real-IP");
+//        if (xRealIp != null && !xRealIp.isEmpty()) {
+//            return xRealIp;
+//        }
+//
+//        return request.getRemoteAddr();
+//    }
 }

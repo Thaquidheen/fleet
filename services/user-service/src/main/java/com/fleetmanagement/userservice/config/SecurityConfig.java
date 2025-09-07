@@ -59,19 +59,16 @@ public class SecurityConfig {
                         // Allow CORS preflight
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
+
                         // Observability and docs
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll().requestMatchers("/auth/login/**", "/auth/refresh/**", "/auth/verify-email/**",
+                                        "/auth/resend-verification/**", "/auth/register/**").permitAll()
 
-                        // Auth endpoints without /api prefix
-                        .requestMatchers("/auth/login/**", "/auth/refresh/**", "/auth/verify-email/**",
-                                "/auth/resend-verification/**", "/auth/register/**").permitAll()
-
-                        // Auth endpoints with /api prefix (for gateway routing)
+                        // If gateway does not strip /api prefix, also permit these:
                         .requestMatchers("/api/auth/login/**", "/api/auth/refresh/**", "/api/auth/verify-email/**",
-                                "/api/auth/resend-verification/**", "/api/auth/register/**").permitAll()
-
-                        // Documentation endpoints
+                                        "/api/auth/resend-verification/**", "/api/auth/register/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
 
                         // Everything else secured
                         .anyRequest().authenticated()

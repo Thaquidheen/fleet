@@ -220,25 +220,23 @@ public class UserService {
     /**
      * Get user by ID (already exists but ensure it's public)
      */
-    @Transactional(readOnly = true)
-    public UserResponse getUserById(UUID userId) {
-        // Check cache first
-        Object cachedUser = cacheService.getCachedUser(userId);
-        if (cachedUser instanceof UserResponse) {
-            return (UserResponse) cachedUser;
-        }
-
-        User user = findUserById(userId);
-        UserResponse response = convertToUserResponse(user);
-
-        // Cache the result
-        cacheService.cacheUser(userId, response);
-
-        return response;
-    }
-    /**
-     * Update user role
-     */
+//    @Transactional(readOnly = true)
+//    public UserResponse getUserById(UUID userId) {
+//        // Check cache first
+//        Object cachedUser = cacheService.getCachedUser(userId);
+//        if (cachedUser instanceof UserResponse) {
+//            return (UserResponse) cachedUser;
+//        }
+//
+//        User user = findUserById(userId);
+//        UserResponse response = convertToUserResponse(user);
+//
+//        // Cache the result
+//        cacheService.cacheUser(userId, response);
+//
+//        return response;
+//    }
+//    /**
     public UserResponse updateUserRole(UUID userId, UserRole newRole, UUID updatedBy) {
         logger.info("Updating role for user ID: {} to {}", userId, newRole);
 

@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -574,4 +575,3 @@ public class AuthenticationService {
         return !user.getEmailVerified() && user.getStatus() == UserStatus.PENDING_VERIFICATION;
     }
 }
-
