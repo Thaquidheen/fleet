@@ -1,160 +1,158 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
+# Company Service Configuration
+server:
+  port: 8083
 
-<parent>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-parent</artifactId>
-<version>3.2.0</version>
-<relativePath/>
-</parent>
+spring:
+  application:
+    name: company-service
 
-<groupId>com.fleetmanagement</groupId>
-<artifactId>company-service</artifactId>
-<version>1.0.0</version>
-<name>company-service</name>
-<description>Company Service for Fleet Management System</description>
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5433/company_service_db
+    username: fleet_user
+    password: fleet_password_2024
+    driver-class-name: org.postgresql.Driver
 
-<properties>
-<java.version>17</java.version>
-<spring-cloud.version>2023.0.0</spring-cloud.version>
-</properties>
+  # JPA Configuration - SCHEMA MANAGED BY FLYWAY
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Only validate, never create/update schema
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
 
-<dependencies>
-<!-- Spring Boot Starters -->
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-web</artifactId>
-</dependency>
+  # Flyway Configuration - MANAGES DATABASE SCHEMA
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+    clean-disabled: true  # Prevent accidental data loss
 
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-data-jpa</artifactId>
-</dependency>
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: "fleet_redis_2024"
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
 
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-validation</artifactId>
-</dependency>
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      group-id: company-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "com.fleetmanagement.companyservice.dto"
 
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-actuator</artifactId>
-</dependency>
+# Security Configuration (Basic setup - update as needed)
+security:
+  jwt:
+    secret: fleet-management-secret-key-for-jwt-token-signing-should-be-very-long-and-secure-and-is-at-least-64-bytes
+    expiration: 86400000  # 24 hours
+    issuer: fleet-management-system
 
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-security</artifactId>
-</dependency>
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+    enabled: true
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    prefer-ip-address: true
 
-<!-- Spring Cloud -->
-<dependency>
-<groupId>org.springframework.cloud</groupId>
-<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-</dependency>
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,flyway
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
 
-<dependency>
-<groupId>org.springframework.cloud</groupId>
-<artifactId>spring-cloud-starter-openfeign</artifactId>
-</dependency>
+# OpenAPI/Swagger Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  show-actuator: true
 
-<!-- Database -->
-<dependency>
-<groupId>org.postgresql</groupId>
-<artifactId>postgresql</artifactId>
-<scope>runtime</scope>
-</dependency>
+# Application-specific Configuration
+app:
+  company:
+    default-trial-days: 30
+    max-trial-extensions: 2
+    subscription:
+      basic:
+        max-users: 5
+        max-vehicles: 10
+      premium:
+        max-users: 50
+        max-vehicles: 100
+      enterprise:
+        max-users: 1000
+        max-vehicles: 10000
 
-<dependency>
-<groupId>org.flywaydb</groupId>
-<artifactId>flyway-core</artifactId>
-</dependency>
+# Logging Configuration
+logging:
+  level:
+    com.fleetmanagement.companyservice: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/company-service.log
 
-<!-- OpenAPI/Swagger -->
-<dependency>
-<groupId>org.springdoc</groupId>
-<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-<version>2.2.0</version>
-</dependency>
-
-<!-- Lombok -->
-<dependency>
-<groupId>org.projectlombok</groupId>
-<artifactId>lombok</artifactId>
-<optional>true</optional>
-</dependency>
-
-<!-- Apache Commons -->
-<dependency>
-<groupId>org.apache.commons</groupId>
-<artifactId>commons-lang3</artifactId>
-</dependency>
-
-<!-- Micrometer for Prometheus -->
-<dependency>
-<groupId>io.micrometer</groupId>
-<artifactId>micrometer-registry-prometheus</artifactId>
-</dependency>
-
-<!-- Test Dependencies -->
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-test</artifactId>
-<scope>test</scope>
-</dependency>
-
-<dependency>
-<groupId>org.springframework.security</groupId>
-<artifactId>spring-security-test</artifactId>
-<scope>test</scope>
-</dependency>
-</dependencies>
-
-<dependencyManagement>
-<dependencies>
-<dependency>
-<groupId>org.springframework.cloud</groupId>
-<artifactId>spring-cloud-dependencies</artifactId>
-<version>${spring-cloud.version}</version>
-<type>pom</type>
-<scope>import</scope>
-</dependency>
-</dependencies>
-</dependencyManagement>
-
-<build>
-<plugins>
-<plugin>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-maven-plugin</artifactId>
-<configuration>
-<excludes>
-<exclude>
-<groupId>org.projectlombok</groupId>
-<artifactId>lombok</artifactId>
-</exclude>
-</excludes>
-</configuration>
-</plugin>
-
-<!-- Flyway Maven Plugin with Database Configuration -->
-<plugin>
-<groupId>org.flywaydb</groupId>
-<artifactId>flyway-maven-plugin</artifactId>
-<version>9.22.3</version>
-<configuration>
-<url>jdbc:postgresql://localhost:5433/company_service_db</url>
-<user>fleet_user</user>
-<password>fleet_password_2024</password>
-<locations>
-<location>classpath:db/migration</location>
-</locations>
-<baselineOnMigrate>true</baselineOnMigrate>
-<validateOnMigrate>true</validateOnMigrate>
-</configuration>
-</plugin>
-</plugins>
-</build>
-</project>
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: basic
+      user-service:
+        connectTimeout: 3000
+        readTimeout: 5000
