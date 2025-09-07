@@ -3,8 +3,8 @@ package com.fleetmanagement.userservice.domain.enums;
 public enum SessionStatus {
     ACTIVE("Active", "Session is currently active"),
     EXPIRED("Expired", "Session has expired"),
-    REVOKED("Revoked", "Session has been manually revoked"),
-    INVALID("Invalid", "Session is invalid");
+    REVOKED("Revoked", "Session has been manually revoked");
+
 
     private final String displayName;
     private final String description;

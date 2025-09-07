@@ -78,11 +78,11 @@ public class UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(request.getRole());
+        user.setRole(request.getRole() != null ? request.getRole() : UserRole.DRIVER);
         user.setCompanyId(request.getCompanyId());
         user.setEmployeeId(request.getEmployeeId());
         user.setDepartment(request.getDepartment());
-        user.setStatus(UserStatus.PENDING_VERIFICATION);
+        user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerified(false);
         user.setCreatedBy(createdBy);
         user.setUpdatedBy(createdBy);
@@ -467,7 +467,6 @@ public class UserService {
             stats.put("totalUsers", userRepository.countByCompanyId(companyId));
             stats.put("activeUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.ACTIVE));
             stats.put("inactiveUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.INACTIVE));
-            stats.put("pendingUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.PENDING_VERIFICATION));
             stats.put("lockedUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.LOCKED));
             stats.put("suspendedUsers", userRepository.countByCompanyIdAndStatus(companyId, UserStatus.SUSPENDED));
 

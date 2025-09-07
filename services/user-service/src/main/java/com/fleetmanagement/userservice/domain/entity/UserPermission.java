@@ -38,7 +38,7 @@ public class UserPermission {
 
     @NotNull(message = "Permission type is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "permission_type", nullable = false, length = 20)
+    @Column(name = "permission_type", nullable = false, columnDefinition = "permission_type")
     private PermissionType permissionType;
 
     @Column(name = "granted", nullable = false)
