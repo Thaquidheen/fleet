@@ -66,12 +66,12 @@ public class User {
 
     @NotNull(message = "User role is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role", nullable = false, columnDefinition = "user_role")
     private UserRole role;
 
     @NotNull(message = "User status is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "user_status")
     private UserStatus status;
 
     @Column(name = "company_id")

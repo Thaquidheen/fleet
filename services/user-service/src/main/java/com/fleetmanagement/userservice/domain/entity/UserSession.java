@@ -1,5 +1,6 @@
 package com.fleetmanagement.userservice.domain.entity;
 
+import com.fleetmanagement.userservice.domain.enums.PermissionType;
 import com.fleetmanagement.userservice.domain.enums.SessionStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -39,8 +40,12 @@ public class UserSession {
 
     @NotNull(message = "Session status is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, columnDefinition = "session_status")
     private SessionStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permission_type", nullable = false, columnDefinition = "permission_type")
+    private PermissionType permissionType;
 
     @NotNull(message = "Expires at is required")
     @Column(name = "expires_at", nullable = false)

@@ -21,8 +21,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        type:
-          preferred_enum_jdbc_type: VARCHAR
+
         format_sql: true
         jdbc:
           lob:

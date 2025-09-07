@@ -1,5 +1,6 @@
 package com.fleetmanagement.userservice.service;
 
+import com.fleetmanagement.userservice.domain.enums.UserRole;
 import com.fleetmanagement.userservice.dto.request.CreateUserRequest;
 import com.fleetmanagement.userservice.domain.entity.User;
 import com.fleetmanagement.userservice.domain.entity.UserSession;
@@ -87,9 +88,9 @@ public class AuthenticationService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .role(request.getRole())                    // ADD: Missing role
+                .role(request.getRole() != null ? request.getRole() : UserRole.DRIVER)                  // ADD: Missing role
                 .companyId(request.getCompanyId())          // ADD: Missing companyId
-                .status(UserStatus.PENDING_VERIFICATION)
+                .status(UserStatus.ACTIVE)
                 .emailVerified(false)
                 .failedLoginAttempts(0)
                 .lastPasswordChange(LocalDateTime.now())
@@ -503,7 +504,7 @@ public class AuthenticationService {
             throw new AuthenticationFailedException("Account is suspended");
         }
 
-        if (user.getStatus() == UserStatus.EXPIRED) {
+        if (user.getStatus() == UserStatus.INACTIVE) {
             throw new AuthenticationFailedException("Account has expired");
         }
 
@@ -572,6 +573,6 @@ public class AuthenticationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return !user.getEmailVerified() && user.getStatus() == UserStatus.PENDING_VERIFICATION;
+        return !user.getEmailVerified();
     }
 }
