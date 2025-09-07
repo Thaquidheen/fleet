@@ -11,6 +11,7 @@ CREATE TABLE user_sessions (
                                refresh_expires_at TIMESTAMP NOT NULL,
                                ip_address VARCHAR(45),
                                user_agent TEXT,
+                               device_info VARCHAR(255),
                                last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

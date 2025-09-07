@@ -21,6 +21,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        type:
+          preferred_enum_jdbc_type: VARCHAR
         format_sql: true
         jdbc:
           lob:
@@ -105,3 +107,35 @@ logging:
     com.fleetmanagement.userservice: DEBUG
     org.flywaydb: INFO
     org.hibernate.SQL: DEBUG
+
+app:
+  name: Fleet Management User Service
+  version: 1.0.0
+  description: User authentication and authorization service
+
+  # Security Configuration
+  security:
+    max-failed-attempts: 5
+    account-lock-duration: 30  # minutes
+    password-reset-token-validity: 1  # hour
+    email-verification-token-validity: 24  # hours
+
+  # Session Configuration
+  session:
+    max-concurrent-sessions: 3
+    session-timeout: 30  # minutes
+
+  # Rate Limiting
+  rate-limit:
+    login-attempts: 5
+    time-window: 900  # 15 minutes in seconds
+
+  # Email Configuration
+  email:
+    verification:
+      enabled: true
+      expiration: 3600000
+      base-url: http://localhost:3000
+    from:
+      name: "Fleet Management System"
+      address: "noreply@fleetmanagement.com"
