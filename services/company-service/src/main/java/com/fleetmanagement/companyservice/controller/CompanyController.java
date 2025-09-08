@@ -1,4 +1,4 @@
-package com.fleetmanagement.companyservice.controller;
+package controller;
 
 import com.fleetmanagement.companyservice.domain.enums.CompanyStatus;
 import com.fleetmanagement.companyservice.domain.enums.SubscriptionPlan;
@@ -23,7 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import com.fleetmanagement.companyservice.dto.response.CompanyValidationResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -91,6 +91,33 @@ public class CompanyController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{companyId}/validation/user-limit")
+    public ResponseEntity<CompanyValidationResponse> validateUserLimit(@PathVariable UUID companyId) {
+        CompanyResponse company = companyService.getCompanyById(companyId);
+        boolean canAdd = companyService.canAddUser(companyId);
+
+        CompanyValidationResponse response = CompanyValidationResponse.builder()
+                .canAddUser(canAdd)
+                .currentUsers(company.getCurrentUserCount())
+                .maxUsers(company.getMaxUsers())
+                .subscriptionPlan(company.getSubscriptionPlan().name())
+                .message(canAdd ? "Can add user" : "User limit exceeded")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{companyId}/users/increment")
+    public ResponseEntity<Void> incrementUserCount(@PathVariable UUID companyId) {
+        companyService.incrementUserCount(companyId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{companyId}/users/decrement")
+    public ResponseEntity<Void> decrementUserCount(@PathVariable UUID companyId) {
+        companyService.decrementUserCount(companyId);
+        return ResponseEntity.ok().build();
+    }
     @GetMapping("/subdomain/{subdomain}")
     @Operation(summary = "Get company by subdomain", description = "Retrieve company information by subdomain")
     @ApiResponse(responseCode = "200", description = "Company found")
