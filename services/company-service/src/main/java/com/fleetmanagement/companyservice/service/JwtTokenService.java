@@ -31,10 +31,11 @@ public class JwtTokenService {
 
     public boolean validateAccessToken(String token) {
         try {
-            // Use the older parser method for compatibility
+            // Updated to use the new parser method for JJWT 0.12.x
             Jwts.parser()
-                    .setSigningKey(getSigningKey())
-                    .parseClaimsJws(token);
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
             logger.debug("JWT validation failed: {}", e.getMessage());
@@ -72,8 +73,9 @@ public class JwtTokenService {
 
     private Claims getClaimsFromToken(String token) {
         return Jwts.parser()
-                .setSigningKey(getSigningKey())
-                .parseClaimsJws(token)
-                .getBody();
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

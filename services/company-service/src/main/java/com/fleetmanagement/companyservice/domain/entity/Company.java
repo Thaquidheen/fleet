@@ -50,12 +50,12 @@ public class Company {
     private String logoUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "company_status")  // ✅ Added explicit column definition
     @Builder.Default
     private CompanyStatus status = CompanyStatus.TRIAL;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "subscription_plan", nullable = false)
+    @Column(name = "subscription_plan", nullable = false, columnDefinition = "subscription_plan")  // ✅ Added explicit column definition
     @Builder.Default
     private SubscriptionPlan subscriptionPlan = SubscriptionPlan.BASIC;
 

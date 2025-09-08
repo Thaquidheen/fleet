@@ -1,4 +1,4 @@
-package controller;
+package com.fleetmanagement.companyservice.controller;  // ✅ Fixed package declaration
 
 import com.fleetmanagement.companyservice.domain.enums.CompanyStatus;
 import com.fleetmanagement.companyservice.domain.enums.SubscriptionPlan;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/companies")
+@RequestMapping("/api/companies")  // ✅ Added /api prefix to match your URL
 @Tag(name = "Company Management", description = "Company CRUD operations and management")
 public class CompanyController {
 
@@ -118,6 +118,7 @@ public class CompanyController {
         companyService.decrementUserCount(companyId);
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/subdomain/{subdomain}")
     @Operation(summary = "Get company by subdomain", description = "Retrieve company information by subdomain")
     @ApiResponse(responseCode = "200", description = "Company found")
@@ -147,6 +148,47 @@ public class CompanyController {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<CompanyResponse> response = companyService.searchCompanies(q, pageable);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/status/{status}")
+    @Operation(summary = "Get companies by status", description = "Retrieve companies by status")
+    @ApiResponse(responseCode = "200", description = "Companies retrieved successfully")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Page<CompanyResponse>> getCompaniesByStatus(
+            @PathVariable CompanyStatus status,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field") @RequestParam(defaultValue = "createdAt") String sortBy,
+            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String sortDir) {
+
+        logger.info("Get companies by status request for status: {}", status);
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<CompanyResponse> response = companyService.getCompaniesByStatus(status, pageable);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/active")
+    @Operation(summary = "Get active companies", description = "Retrieve all active companies")
+    @ApiResponse(responseCode = "200", description = "Active companies retrieved successfully")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Page<CompanyResponse>> getActiveCompanies(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field") @RequestParam(defaultValue = "name") String sortBy,
+            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "asc") String sortDir) {
+
+        logger.info("Get active companies request");
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<CompanyResponse> response = companyService.getActiveCompanies(pageable);
 
         return ResponseEntity.ok(response);
     }
@@ -217,93 +259,6 @@ public class CompanyController {
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Company activated successfully");
-        response.put("companyId", companyId.toString());
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/status/{status}")
-    @Operation(summary = "Get companies by status", description = "Retrieve companies by status")
-    @ApiResponse(responseCode = "200", description = "Companies retrieved successfully")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<Page<CompanyResponse>> getCompaniesByStatus(
-            @PathVariable CompanyStatus status,
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
-            @Parameter(description = "Sort field") @RequestParam(defaultValue = "createdAt") String sortBy,
-            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String sortDir) {
-
-        logger.info("Get companies by status request for status: {}", status);
-
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<CompanyResponse> response = companyService.getCompaniesByStatus(status, pageable);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/active")
-    @Operation(summary = "Get active companies", description = "Retrieve all active companies")
-    @ApiResponse(responseCode = "200", description = "Active companies retrieved successfully")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<Page<CompanyResponse>> getActiveCompanies(
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
-            @Parameter(description = "Sort field") @RequestParam(defaultValue = "name") String sortBy,
-            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "asc") String sortDir) {
-
-        logger.info("Get active companies request");
-
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<CompanyResponse> response = companyService.getActiveCompanies(pageable);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{companyId}/validation/user")
-    @Operation(summary = "Check if company can add user", description = "Validate if company can add new user")
-    @ApiResponse(responseCode = "200", description = "Validation result")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
-    public ResponseEntity<Map<String, Boolean>> canAddUser(@PathVariable UUID companyId) {
-        logger.info("Check can add user for company: {}", companyId);
-
-        boolean canAdd = companyService.canAddUser(companyId);
-
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("canAddUser", canAdd);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{companyId}/validation/vehicle")
-    @Operation(summary = "Check if company can add vehicle", description = "Validate if company can add new vehicle")
-    @ApiResponse(responseCode = "200", description = "Validation result")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
-    public ResponseEntity<Map<String, Boolean>> canAddVehicle(@PathVariable UUID companyId) {
-        logger.info("Check can add vehicle for company: {}", companyId);
-
-        boolean canAdd = companyService.canAddVehicle(companyId);
-
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("canAddVehicle", canAdd);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/{companyId}/validation/access")
-    @Operation(summary = "Validate company access", description = "Validate if company can perform operations")
-    @ApiResponse(responseCode = "200", description = "Company access is valid")
-    @ApiResponse(responseCode = "400", description = "Company access is invalid")
-    public ResponseEntity<Map<String, String>> validateCompanyAccess(@PathVariable UUID companyId) {
-        logger.info("Validate company access for ID: {}", companyId);
-
-        companyService.validateCompanyAccess(companyId);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Company access is valid");
         response.put("companyId", companyId.toString());
 
         return ResponseEntity.ok(response);
