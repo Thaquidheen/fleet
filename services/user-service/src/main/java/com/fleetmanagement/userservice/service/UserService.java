@@ -35,7 +35,8 @@ import java.util.UUID;
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
+    private final SubscriptionValidationService subscriptionValidationService;
+    private final DriverService driverService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
@@ -47,30 +48,45 @@ public class UserService {
                        PasswordEncoder passwordEncoder,
                        EmailService emailService,
                        CacheService cacheService,
-                       PasswordService passwordService) {
+                       PasswordService passwordService,
+    SubscriptionValidationService subscriptionValidationService,
+                       DriverService driverService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.cacheService = cacheService;
         this.passwordService = passwordService;
+        this.subscriptionValidationService = subscriptionValidationService;
+        this.driverService = driverService;
     }
 
     /**
      * Create a new user
      */
+    @Transactional
     public UserResponse createUser(CreateUserRequest request, UUID createdBy) {
-        logger.info("Creating new user with username: {}", request.getUsername());
+        logger.info("Creating new user with username: {} for company: {}",
+                request.getUsername(), request.getCompanyId());
 
-        // Validate password strength
+        // 1. NEW: Validate company subscription limits FIRST
+        try {
+            subscriptionValidationService.validateUserCreation(request.getCompanyId());
+        } catch (Exception e) {
+            logger.error("Company validation failed for company: {}", request.getCompanyId(), e);
+            throw new SubscriptionLimitExceededException(
+                    "Cannot create user: " + e.getMessage());
+        }
+
+        // 2. Validate password strength (your existing logic)
         if (!passwordService.isValidPassword(request.getPassword())) {
             throw new IllegalArgumentException("Password does not meet requirements: " +
                     passwordService.getPasswordRequirements());
         }
 
-        // Validate uniqueness
+        // 3. Validate uniqueness (your existing logic)
         validateUserUniqueness(request.getUsername(), request.getEmail(), null);
 
-        // Create user entity
+        // 4. Create user entity (enhanced with additional validation)
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
@@ -82,7 +98,7 @@ public class UserService {
         user.setCompanyId(request.getCompanyId());
         user.setEmployeeId(request.getEmployeeId());
         user.setDepartment(request.getDepartment());
-        user.setStatus(UserStatus.ACTIVE);
+        user.setStatus(UserStatus.PENDING_VERIFICATION); // Changed from ACTIVE
         user.setEmailVerified(false);
         user.setCreatedBy(createdBy);
         user.setUpdatedBy(createdBy);
@@ -90,32 +106,44 @@ public class UserService {
         user.setLanguage(request.getLanguage() != null ? request.getLanguage() : "en");
         user.setLastPasswordChange(LocalDateTime.now());
 
-        // Generate email verification token
+        // 5. Generate email verification token (your existing logic)
         String verificationToken = UUID.randomUUID().toString();
         user.setEmailVerificationToken(verificationToken);
         user.setEmailVerificationExpiry(LocalDateTime.now().plusHours(24));
 
-        // Save user
+        // 6. Save user
         User savedUser = userRepository.save(user);
 
-        // Send verification email
+        // 7. NEW: Increment company user count
+        try {
+            subscriptionValidationService.incrementUserCount(request.getCompanyId());
+        } catch (Exception e) {
+            logger.error("Failed to increment user count for company: {}",
+                    request.getCompanyId(), e);
+            // Consider implementing compensating transaction here
+            // For now, we'll continue but log the error
+        }
+
+        // 8. Send verification email (your existing logic with enhanced error handling)
         try {
             emailService.sendEmailVerification(savedUser.getEmail(),
                     savedUser.getFullName(),
                     verificationToken);
+            logger.info("Verification email sent to: {}", savedUser.getEmail());
         } catch (Exception e) {
             logger.error("Failed to send verification email to {}: {}",
                     savedUser.getEmail(), e.getMessage());
+            // Email failure shouldn't prevent user creation
         }
 
-        // Cache the user
+        // 9. Cache the user (your existing logic)
         UserResponse response = convertToUserResponse(savedUser);
         cacheService.cacheUser(savedUser.getId(), response);
 
-        logger.info("User created successfully with ID: {}", savedUser.getId());
+        logger.info("User created successfully with ID: {} for company: {}",
+                savedUser.getId(), request.getCompanyId());
         return response;
     }
-
     /**
      * Get user by ID
      */
@@ -281,20 +309,24 @@ public class UserService {
     /**
      * Delete user (soft delete by changing status)
      */
-    public void deleteUser(UUID userId, UUID deletedBy) {
-        logger.info("Deleting user with ID: {}", userId);
+    @Transactional
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
-        User user = findUserById(userId);
-        user.setStatus(UserStatus.INACTIVE);
-        user.setUpdatedBy(deletedBy);
+        UUID companyId = user.getCompanyId();
 
-        userRepository.save(user);
+        // Delete user
+        userRepository.delete(user);
+
+        // Decrement company user count
+        subscriptionValidationService.decrementUserCount(companyId);
 
         // Clear cache
         cacheService.evictUser(userId);
         cacheService.evictUserPermissions(userId);
 
-        logger.info("User deleted successfully with ID: {}", userId);
+        logger.info("User deleted successfully: {} from company: {}", userId, companyId);
     }
 
     /**

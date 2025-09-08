@@ -21,7 +21,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
         format_sql: true
         jdbc:
           lob:
@@ -56,13 +55,52 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: thaquidheen@gmail.com
-    password: 9656
+    password: 9656  # Consider using environment variables for security
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
+# ====== MISSING CONFIGURATIONS TO ADD ======
+
+# Feign Client Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: basic
+      company-service:
+        connectTimeout: 3000
+        readTimeout: 5000
+        # Retry configuration
+        retryer:
+          period: 1000
+          maxPeriod: 5000
+          maxAttempts: 3
+
+# Resilience4j Circuit Breaker (for Feign)
+resilience4j:
+  circuitbreaker:
+    instances:
+      company-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+
+# Retry Configuration
+spring:
+  retry:
+    enabled: true
+
+# ================================================
 
 # JWT Configuration
 jwt:
@@ -106,6 +144,7 @@ logging:
     com.fleetmanagement.userservice: DEBUG
     org.flywaydb: INFO
     org.hibernate.SQL: DEBUG
+    com.fleetmanagement.userservice.client: DEBUG  # For Feign client debugging
 
 app:
   name: Fleet Management User Service
@@ -138,3 +177,30 @@ app:
     from:
       name: "Fleet Management System"
       address: "noreply@fleetmanagement.com"
+
+  # ====== NEW CONFIGURATIONS ======
+
+  # Company Service Integration
+  company:
+    service:
+      url: http://company-service  # Service discovery will resolve this
+      timeout: 5000
+      retry-attempts: 3
+    validation:
+      cache-duration: 300  # 5 minutes
+
+  # Subscription Limits (fallback values)
+  subscription:
+    limits:
+      basic:
+        max-users: 5
+        max-vehicles: 10
+      premium:
+        max-users: 50
+        max-vehicles: 100
+      enterprise:
+        max-users: 1000
+        max-vehicles: 10000
+      owner:
+        max-users: -1  # Unlimited
+        max-vehicles: -1  # Unlimited

@@ -1,6 +1,6 @@
-// EmailService.java
 package com.fleetmanagement.userservice.service;
 
+import com.fleetmanagement.userservice.domain.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +9,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class EmailService {
@@ -20,114 +23,126 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${app.email.verification.base-url}")
-    private String baseUrl;
-
-    @Value("${spring.mail.username}")
+    @Value("${app.email.from:noreply@fleetmanagement.com}")
     private String fromEmail;
+
+    @Value("${app.email.verification.url:http://localhost:8080/api/users/verify}")
+    private String verificationBaseUrl;
+
+    @Value("${app.email.password-reset.url:http://localhost:8080/api/users/reset-password}")
+    private String passwordResetBaseUrl;
 
     @Autowired
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
-    public void sendEmailVerification(String toEmail, String fullName, String verificationToken) {
+    @Async
+    public void sendVerificationEmail(User user) {
         try {
-            String subject = "Fleet Management - Email Verification";
-            String verificationUrl = baseUrl + "/verify-email?token=" + verificationToken;
-
-            String htmlContent = buildVerificationEmailContent(fullName, verificationUrl);
+            String verificationUrl = verificationBaseUrl + "?token=" + user.getEmailVerificationToken();
 
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
             helper.setFrom(fromEmail);
+            helper.setTo(user.getEmail());
+            helper.setSubject("Verify Your Email - Fleet Management System");
+
+            String htmlContent = buildVerificationEmailContent(user.getFirstName(), verificationUrl);
+            helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            logger.info("Email verification sent to: {}", toEmail);
+            logger.info("Verification email sent to: {}", user.getEmail());
 
         } catch (MessagingException e) {
-            logger.error("Failed to send email verification to {}: {}", toEmail, e.getMessage());
-            throw new RuntimeException("Failed to send email", e);
+            logger.error("Failed to send verification email to: {}", user.getEmail(), e);
         }
     }
 
-    public void sendPasswordReset(String toEmail, String fullName, String resetToken) {
+    @Async
+    public void sendPasswordResetEmail(User user, String resetToken) {
         try {
-            String subject = "Fleet Management - Password Reset";
-            String resetUrl = baseUrl + "/reset-password?token=" + resetToken;
-
-            String htmlContent = buildPasswordResetEmailContent(fullName, resetUrl);
+            String resetUrl = passwordResetBaseUrl + "?token=" + resetToken;
 
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
             helper.setFrom(fromEmail);
+            helper.setTo(user.getEmail());
+            helper.setSubject("Password Reset - Fleet Management System");
+
+            String htmlContent = buildPasswordResetEmailContent(user.getFirstName(), resetUrl);
+            helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            logger.info("Password reset email sent to: {}", toEmail);
+            logger.info("Password reset email sent to: {}", user.getEmail());
 
         } catch (MessagingException e) {
-            logger.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
-            throw new RuntimeException("Failed to send email", e);
+            logger.error("Failed to send password reset email to: {}", user.getEmail(), e);
         }
     }
 
-    private String buildVerificationEmailContent(String fullName, String verificationUrl) {
-        return """
-            <html>
-            <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
-                <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">Email Verification Required</h2>
-                    <p>Dear %s,</p>
-                    <p>Welcome to Fleet Management System! Please verify your email address by clicking the button below:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="%s" style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                            Verify Email Address
-                        </a>
-                    </div>
-                    <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                    <p style="word-break: break-all; color: #666;">%s</p>
-                    <p>This verification link will expire in 24 hours.</p>
-                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-                    <p style="font-size: 12px; color: #666; text-align: center;">
-                        If you didn't create an account, please ignore this email.
-                    </p>
-                </div>
-            </body>
-            </html>
-            """.formatted(fullName, verificationUrl, verificationUrl);
+    @Async
+    public void sendWelcomeEmail(User user) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Welcome to Fleet Management System");
+            message.setText(buildWelcomeEmailContent(user.getFirstName()));
+
+            mailSender.send(message);
+            logger.info("Welcome email sent to: {}", user.getEmail());
+
+        } catch (Exception e) {
+            logger.error("Failed to send welcome email to: {}", user.getEmail(), e);
+        }
     }
 
-    private String buildPasswordResetEmailContent(String fullName, String resetUrl) {
-        return """
+    private String buildVerificationEmailContent(String firstName, String verificationUrl) {
+        return String.format("""
             <html>
-            <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
-                <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">Password Reset Request</h2>
-                    <p>Dear %s,</p>
-                    <p>You have requested to reset your password. Click the button below to reset it:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="%s" style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                            Reset Password
-                        </a>
-                    </div>
-                    <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                    <p style="word-break: break-all; color: #666;">%s</p>
-                    <p>This reset link will expire in 1 hour.</p>
-                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-                    <p style="font-size: 12px; color: #666; text-align: center;">
-                        If you didn't request this password reset, please ignore this email.
-                    </p>
-                </div>
+            <body>
+                <h2>Welcome to Fleet Management System!</h2>
+                <p>Hello %s,</p>
+                <p>Thank you for registering with Fleet Management System. Please click the link below to verify your email address:</p>
+                <p><a href="%s" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+                <p>If you didn't create this account, please ignore this email.</p>
+                <p>Best regards,<br>Fleet Management Team</p>
             </body>
             </html>
-            """.formatted(fullName, resetUrl, resetUrl);
+            """, firstName, verificationUrl);
+    }
+
+    private String buildPasswordResetEmailContent(String firstName, String resetUrl) {
+        return String.format("""
+            <html>
+            <body>
+                <h2>Password Reset Request</h2>
+                <p>Hello %s,</p>
+                <p>You requested a password reset. Click the link below to reset your password:</p>
+                <p><a href="%s" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
+                <p>This link will expire in 1 hour.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+                <p>Best regards,<br>Fleet Management Team</p>
+            </body>
+            </html>
+            """, firstName, resetUrl);
+    }
+
+    private String buildWelcomeEmailContent(String firstName) {
+        return String.format("""
+            Hello %s,
+            
+            Welcome to Fleet Management System!
+            
+            Your email has been verified successfully. You can now access all features of our platform.
+            
+            If you have any questions, please don't hesitate to contact our support team.
+            
+            Best regards,
+            Fleet Management Team
+            """, firstName);
     }
 }

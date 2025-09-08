@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChangePasswordRequest {
+public class ResetPasswordRequest {
 
-    @NotBlank(message = "Current password is required")
-    private String currentPassword;
+    @NotBlank(message = "Reset token is required")
+    private String token;
 
     @NotBlank(message = "New password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
