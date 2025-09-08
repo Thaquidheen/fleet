@@ -95,10 +95,7 @@ resilience4j:
         failureRateThreshold: 50
         eventConsumerBufferSize: 10
 
-# Retry Configuration
-spring:
-  retry:
-    enabled: true
+
 
 # ================================================
 

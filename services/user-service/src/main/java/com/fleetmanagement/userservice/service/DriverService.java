@@ -110,23 +110,36 @@ public class DriverService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .licenseNumber(user.getLicenseNumber())
-                .licenseExpiry(user.getLicenseExpiry())
+                .licenseExpiry(user.getLicenseExpiry() != null ?
+                        user.getLicenseExpiry().toLocalDate() : null) // Convert LocalDateTime to LocalDate
                 .status(user.getStatus().name())
                 .companyId(user.getCompanyId())
                 .createdAt(user.getCreatedAt())
+                .available(isDriverAvailable(user)) // Add the available flag
                 .build();
     }
 
     private UserResponse convertToUserResponse(User user) {
-        // Use existing conversion logic from UserService
         return UserResponse.builder()
                 .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .status(user.getStatus().name())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole()) // Use UserRole enum directly, not string
+                .status(user.getStatus()) // Use UserStatus enum directly, not string
                 .companyId(user.getCompanyId())
+                .employeeId(user.getEmployeeId())
+                .department(user.getDepartment())
+                .emailVerified(user.getEmailVerified())
+                .lastLogin(user.getLastLogin())
+                .profileImageUrl(user.getProfileImageUrl())
+                .timezone(user.getTimezone())
+                .language(user.getLanguage())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

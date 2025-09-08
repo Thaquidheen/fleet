@@ -1,6 +1,6 @@
 // UserService.java - Complete Version with All Dependencies
 package com.fleetmanagement.userservice.service;
-
+import com.fleetmanagement.userservice.exception.SubscriptionLimitExceededException;
 import com.fleetmanagement.userservice.domain.entity.User;
 import com.fleetmanagement.userservice.domain.enums.UserRole;
 import com.fleetmanagement.userservice.domain.enums.UserStatus;
@@ -310,11 +310,15 @@ public class UserService {
      * Delete user (soft delete by changing status)
      */
     @Transactional
-    public void deleteUser(UUID userId) {
+    public void deleteUser(UUID userId, UUID deletedBy) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         UUID companyId = user.getCompanyId();
+
+        // Set deleted by before deletion (for audit)
+        user.setUpdatedBy(deletedBy);
+        userRepository.save(user); // Save the audit info first
 
         // Delete user
         userRepository.delete(user);
@@ -326,7 +330,7 @@ public class UserService {
         cacheService.evictUser(userId);
         cacheService.evictUserPermissions(userId);
 
-        logger.info("User deleted successfully: {} from company: {}", userId, companyId);
+        logger.info("User deleted successfully: {} from company: {} by user: {}", userId, companyId, deletedBy);
     }
 
     /**

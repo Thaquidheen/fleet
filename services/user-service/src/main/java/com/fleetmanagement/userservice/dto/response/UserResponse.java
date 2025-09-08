@@ -3,10 +3,17 @@ package com.fleetmanagement.userservice.dto.response;
 
 import com.fleetmanagement.userservice.domain.enums.UserRole;
 import com.fleetmanagement.userservice.domain.enums.UserStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Data
+@Builder
+@AllArgsConstructor
 public class UserResponse {
 
     private UUID id;

@@ -172,6 +172,13 @@ public class User {
     @Column(name = "version")
     private Long version;
 
+    @Size(max = 50, message = "License number must not exceed 50 characters")
+    @Column(name = "license_number", length = 50)
+    private String licenseNumber;
+
+    @Column(name = "license_expiry")
+    private LocalDateTime licenseExpiry;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<UserSession> sessions = new HashSet<>();
@@ -210,7 +217,26 @@ public class User {
         this.accountLockedUntil = LocalDateTime.now().plusNanos(lockoutDurationMillis * 1_000_000);
         this.status = UserStatus.LOCKED;
     }
+    public String getPassword() {
+        return this.passwordHash;
+    }
 
+    public void setPassword(String password) {
+        this.passwordHash = password;
+    }
+
+    // Also add these missing methods for license-related fields
+    public String getLicenseNumber() {
+        return this.licenseNumber; // Add this field if missing
+    }
+
+    public LocalDateTime getLicenseExpiry() {
+        return this.licenseExpiry; // Add this field if missing
+    }
+
+    public String getPhone() {
+        return this.phoneNumber;
+    }
     public void lockAccount(LocalDateTime lockUntil) {
         this.accountLockedUntil = lockUntil;
         this.status = UserStatus.LOCKED;

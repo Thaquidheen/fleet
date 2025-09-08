@@ -145,4 +145,26 @@ public class EmailService {
             Fleet Management Team
             """, firstName);
     }
+
+
+    public void sendEmailVerification(String email, String fullName, String token) {
+        // Create a user object for the existing method
+        User tempUser = User.builder()
+                .email(email)
+                .firstName(fullName.split(" ")[0])
+                .emailVerificationToken(token)
+                .build();
+
+        sendVerificationEmail(tempUser);
+    }
+
+    public void sendPasswordReset(String email, String fullName, String token) {
+        // Create a user object for the existing method
+        User tempUser = User.builder()
+                .email(email)
+                .firstName(fullName.split(" ")[0])
+                .build();
+
+        sendPasswordResetEmail(tempUser, token);
+    }
 }

@@ -153,6 +153,51 @@ public class PasswordService {
         }
     }
 
+
+    public boolean isValidPassword(String password) {
+        if (password == null || password.length() < minPasswordLength) {
+            return false;
+        }
+
+        if (requireUppercase && !UPPERCASE_PATTERN.matcher(password).matches()) {
+            return false;
+        }
+
+        if (!LOWERCASE_PATTERN.matcher(password).matches()) {
+            return false;
+        }
+
+        if (requireNumbers && !DIGIT_PATTERN.matcher(password).matches()) {
+            return false;
+        }
+
+        if (requireSpecialChars && !SPECIAL_CHAR_PATTERN.matcher(password).matches()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public String getPasswordRequirements() {
+        StringBuilder requirements = new StringBuilder();
+        requirements.append("Password must be at least ").append(minPasswordLength).append(" characters long");
+
+        if (requireUppercase) {
+            requirements.append(", contain at least one uppercase letter");
+        }
+
+        requirements.append(", contain at least one lowercase letter");
+
+        if (requireNumbers) {
+            requirements.append(", contain at least one number");
+        }
+
+        if (requireSpecialChars) {
+            requirements.append(", contain at least one special character");
+        }
+
+        return requirements.toString();
+    }
     public boolean isPasswordExpired(User user) {
         if (user.getPasswordChangedAt() == null) {
             return false; // No expiry for passwords that haven't been changed
