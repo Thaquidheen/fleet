@@ -36,7 +36,7 @@ public class CreateUserRequest {
     @NotNull(message = "User role is required")
     private UserRole role;
 
-    @NotNull(message = "Company ID is required")
+
     private UUID companyId;
 
     @Size(max = 50, message = "Employee ID must not exceed 50 characters")
@@ -54,6 +54,11 @@ public class CreateUserRequest {
     // Constructors
     public CreateUserRequest() {}
 
+    public void validateCompanyIdBasedOnRole() {
+        if (role != UserRole.SUPER_ADMIN && companyId == null) {
+            throw new IllegalArgumentException("Company ID is required for " + role + " users");
+        }
+    }
     // Getters and Setters
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

@@ -68,6 +68,19 @@ public class UserService {
         logger.info("Creating new user with username: {} for company: {}",
                 request.getUsername(), request.getCompanyId());
 
+        if (request.getRole() != UserRole.SUPER_ADMIN && request.getCompanyId() == null) {
+            throw new IllegalArgumentException("Company ID is required for " + request.getRole() + " users");
+        }
+
+        if (request.getRole() != UserRole.SUPER_ADMIN && request.getCompanyId() != null) {
+            try {
+                subscriptionValidationService.validateUserCreation(request.getCompanyId());
+            } catch (Exception e) {
+                logger.error("Company validation failed for company: {}", request.getCompanyId(), e);
+                throw new SubscriptionLimitExceededException("Cannot create user: " + e.getMessage());
+            }
+        }
+
         // 1. NEW: Validate company subscription limits FIRST
         try {
             subscriptionValidationService.validateUserCreation(request.getCompanyId());
