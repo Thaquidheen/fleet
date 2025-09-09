@@ -1,13 +1,13 @@
-**
-        * Create Vehicle Group Request DTO
+
+/**
+ * Update Vehicle Group Request DTO
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateVehicleGroupRequest {
+public class UpdateVehicleGroupRequest {
 
-    @NotBlank(message = "Group name is required")
     @Size(max = 100, message = "Group name must not exceed 100 characters")
     private String name;
 
@@ -16,9 +16,6 @@ public class CreateVehicleGroupRequest {
 
     private UUID parentGroupId;
 
-    @NotNull(message = "Group type is required")
-    private GroupType groupType;
-
     @Min(value = 1, message = "Max vehicles must be at least 1")
     private Integer maxVehicles;
 
@@ -26,6 +23,8 @@ public class CreateVehicleGroupRequest {
     private String location;
 
     private UUID managerId;
+
+    private Boolean isActive;
 
     private Map<String, Object> customFields;
 
