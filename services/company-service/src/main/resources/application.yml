@@ -1,91 +1,123 @@
-# Company Service Configuration
+# Company Service Configuration - Complete and Enhanced
 server:
   port: 8083
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 1024
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20s
+    keep-alive-timeout: 15s
+    max-connections: 8192
+    accept-count: 100
 
 spring:
   application:
     name: company-service
 
-  # Database Configuration
+  # Enhanced Database Configuration
   datasource:
     url: jdbc:postgresql://localhost:5433/company_service_db
     username: fleet_user
     password: fleet_password_2024
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 20
+      minimum-idle: 5
+      pool-name: CompanyServiceHikariCP
 
-  # JPA Configuration - SCHEMA MANAGED BY FLYWAY
+  # Enhanced JPA Configuration
   jpa:
     hibernate:
       ddl-auto: validate  # Only validate, never create/update schema
-    show-sql: true
+    show-sql: false  # Changed to false for production
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        use_sql_comments: false
         jdbc:
-          batch_size: 20
+          batch_size: 25
         order_inserts: true
         order_updates: true
-        # CRITICAL: Add this for PostgreSQL enum support
+        batch_versioned_data: true
         globally_quoted_identifiers: false
-        # This helps with enum handling
         default_schema: public
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
-  # Flyway Configuration - MANAGES DATABASE SCHEMA
+  # Flyway Configuration
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 0
     validate-on-migrate: true
-    clean-disabled: true  # Prevent accidental data loss
+    clean-disabled: true
 
-  # Redis Configuration
+  # Enhanced Redis Configuration
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: "fleet_redis_2024"
-      timeout: 2000ms
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:fleet_redis_2024}
+      database: 2  # Use database 2 for company service
+      timeout: 3000ms
       lettuce:
         pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
+          max-active: 20
+          max-idle: 10
+          min-idle: 2
+          max-wait: 2000ms
+        shutdown-timeout: 200ms
 
-  # Kafka Configuration
+  # Enhanced Kafka Configuration
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: all
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
       retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
     consumer:
       group-id: company-service
+      auto-offset-reset: latest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: earliest
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       properties:
-        spring:
-          json:
-            trusted:
-              packages: "com.fleetmanagement.companyservice.dto"
+        spring.json.trusted.packages: "com.fleetmanagement.companyservice"
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 3000
 
-# Security Configuration (Basic setup - update as needed)
+# Enhanced Security Configuration
 security:
   jwt:
-    secret: fleet-management-secret-key-for-jwt-token-signing-should-be-very-long-and-secure-and-is-at-least-64-bytes
+    secret: ${JWT_SECRET:fleet-management-secret-key-for-jwt-token-signing-should-be-very-long-and-secure-and-is-at-least-64-bytes}
     expiration: 86400000  # 24 hours
     issuer: fleet-management-system
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
 
 # Eureka Client Configuration
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
     registry-fetch-interval-seconds: 30
@@ -96,12 +128,12 @@ eureka:
     lease-expiration-duration-in-seconds: 90
     prefer-ip-address: true
 
-# Actuator Configuration
+# Enhanced Actuator Configuration
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,flyway
+        include: health,info,metrics,prometheus,flyway,kafka,redis,circuitbreakers,retries
   endpoint:
     health:
       show-details: always
@@ -111,6 +143,19 @@ management:
       enabled: true
     redis:
       enabled: true
+    kafka:
+      enabled: true
+    circuitbreakers:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.95, 0.99
 
 # OpenAPI/Swagger Configuration
 springdoc:
@@ -121,36 +166,72 @@ springdoc:
     enabled: true
   show-actuator: true
 
-# Application-specific Configuration
+# ==================== NEW: ENHANCED APPLICATION CONFIGURATION ====================
+
 app:
   company:
+    # User management settings
+    user-management:
+      sync-enabled: true
+      sync-interval-minutes: 30
+      cache-duration-minutes: 5
+      bulk-operation-timeout-minutes: 10
+      max-bulk-operation-size: 100
+
+    # Enhanced subscription settings
+    subscription:
+      limits:
+        basic:
+          max-users: 5
+          max-vehicles: 10
+          max-drivers: 3
+        premium:
+          max-users: 50
+          max-vehicles: 100
+          max-drivers: 25
+        enterprise:
+          max-users: 1000
+          max-vehicles: 10000
+          max-drivers: 500
+        owner:
+          max-users: -1  # Unlimited
+          max-vehicles: -1  # Unlimited
+          max-drivers: -1  # Unlimited
+
+    # Validation settings
+    validation:
+      enforce-limits: true
+      allow-overrides: true
+      grace-period-days: 7
+      warning-threshold-percentage: 80
+
+    # Audit settings
+    audit:
+      enabled: true
+      retention-days: 90
+      log-sensitive-data: false
+      track-user-changes: true
+      track-subscription-changes: true
+
+    # Legacy settings (keeping for backward compatibility)
     default-trial-days: 30
     max-trial-extensions: 2
-    subscription:
-      basic:
-        max-users: 5
-        max-vehicles: 10
-      premium:
-        max-users: 50
-        max-vehicles: 100
-      enterprise:
-        max-users: 1000
-        max-vehicles: 10000
 
-# Logging Configuration
-logging:
-  level:
-    com.fleetmanagement.companyservice: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: logs/company-service.log
+  # Kafka event publishing settings
+  kafka:
+    events:
+      enabled: true
+    topics:
+      company-created: "company.created"
+      company-updated: "company.updated"
+      company-deleted: "company.deleted"
+      company-subscription-changed: "company.subscription.changed"
+      company-user-count-changed: "company.user.count.changed"
+      company-user-count-synchronized: "company.user.count.synchronized"
+      company-status-changed: "company.status.changed"
+      bulk-operation-completed: "bulk.operation.completed"
 
-# Feign Configuration
+# Enhanced Feign Client Configuration
 feign:
   client:
     config:
@@ -159,5 +240,205 @@ feign:
         readTimeout: 10000
         loggerLevel: basic
       user-service:
+        url: ${USER_SERVICE_URL:http://localhost:8082}
         connectTimeout: 3000
-        readTimeout: 5000
+        readTimeout: 8000
+        loggerLevel: full
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+
+# Circuit Breaker Configuration (NEW)
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - feign.RetryableException
+        ignoreExceptions:
+          - com.fleetmanagement.companyservice.exception.BusinessException
+          - org.springframework.web.client.HttpClientErrorException$NotFound
+
+  retry:
+    instances:
+      user-service:
+        maxAttempts: 3
+        waitDuration: 1000ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - java.util.concurrent.TimeoutException
+          - feign.RetryableException
+
+  timelimiter:
+    instances:
+      user-service:
+        timeoutDuration: 5s
+
+# Enhanced Logging Configuration
+logging:
+  level:
+    com.fleetmanagement.companyservice: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.data.redis: INFO
+    feign: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+    io.github.resilience4j: INFO
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+  file:
+    name: logs/company-service.log
+
+# ==================== NEW: SCHEDULED TASKS CONFIGURATION ====================
+
+scheduling:
+  tasks:
+    user-count-sync:
+      cron: "0 */30 * * * ?" # Every 30 minutes
+      enabled: true
+    cleanup-old-audit-logs:
+      cron: "0 0 2 * * ?" # Daily at 2 AM
+      enabled: true
+      retention-days: 90
+    bulk-operation-cleanup:
+      cron: "0 0 3 * * ?" # Daily at 3 AM
+      enabled: true
+      retention-days: 30
+    company-statistics-refresh:
+      cron: "0 0 1 * * ?" # Daily at 1 AM
+      enabled: true
+
+# ==================== NEW: PERFORMANCE CONFIGURATION ====================
+
+company-service:
+  version: 1.0.0
+  api:
+    rate-limit:
+      enabled: true
+      requests-per-minute: 100
+      burst-capacity: 20
+
+  batch:
+    user-operations:
+      chunk-size: 50
+      retry-attempts: 3
+      timeout-minutes: 10
+
+  cache:
+    default-ttl-minutes: 5
+    user-count-ttl-minutes: 2
+    company-validation-ttl-minutes: 5
+
+  integration:
+    user-service:
+      timeout-seconds: 10
+      retry-attempts: 3
+      circuit-breaker-enabled: true
+
+  monitoring:
+    slow-query-threshold-ms: 1000
+    enable-request-logging: true
+    enable-response-logging: false
+
+# ==================== ENVIRONMENT-SPECIFIC PROFILES ====================
+
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+
+logging:
+  level:
+    com.fleetmanagement.companyservice: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    feign: DEBUG
+
+app:
+  kafka:
+    events:
+      enabled: true
+
+company-service:
+  monitoring:
+    enable-request-logging: true
+    enable-response-logging: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+
+logging:
+  level:
+    com.fleetmanagement.companyservice: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.kafka: WARN
+    feign: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+app:
+  kafka:
+    events:
+      enabled: true
+
+company-service:
+  monitoring:
+    enable-request-logging: false
+    enable-response-logging: false
+
+server:
+  compression:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+
+app:
+  kafka:
+    events:
+      enabled: false
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        registerHealthIndicator: false
