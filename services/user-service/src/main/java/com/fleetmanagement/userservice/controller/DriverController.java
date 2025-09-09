@@ -1,6 +1,5 @@
 package com.fleetmanagement.userservice.controller;
 
-import com.fleetmanagement.userservice.dto.response.DriverResponse;
 import com.fleetmanagement.userservice.dto.request.DriverAssignmentNotification;
 import com.fleetmanagement.userservice.dto.response.ApiResponse;
 import com.fleetmanagement.userservice.dto.response.DriverResponse;
@@ -8,15 +7,20 @@ import com.fleetmanagement.userservice.dto.response.DriverValidationResponse;
 import com.fleetmanagement.userservice.dto.response.UserResponse;
 import com.fleetmanagement.userservice.service.DriverService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +29,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/drivers")
 @Tag(name = "Driver Management", description = "Driver-specific operations")
+@Validated
 public class DriverController {
 
     private static final Logger logger = LoggerFactory.getLogger(DriverController.class);
@@ -82,255 +87,236 @@ public class DriverController {
         return ResponseEntity.ok(user);
     }
 
-    @RestController
-    @RequestMapping("/api/users/drivers")
-    @Tag(name = "Driver Management", description = "Driver-specific operations for vehicle assignment")
-    @Validated
-    public class DriverController {
+    /**
+     * Get available drivers (not currently assigned to vehicles)
+     */
+    @GetMapping("/available")
+    @Operation(summary = "Get available drivers", description = "Retrieve drivers available for vehicle assignment")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Available drivers retrieved successfully")
+    @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
+    public ResponseEntity<ApiResponse<List<DriverResponse>>> getAvailableDriversForAssignment(
+            @RequestParam @Parameter(description = "Company ID") UUID companyId,
+            Authentication authentication) {
 
-        private static final Logger logger = LoggerFactory.getLogger(DriverController.class);
+        logger.debug("Get available drivers request for company: {}", companyId);
 
-        private final DriverService driverService;
-
-        @Autowired
-        public DriverController(DriverService driverService) {
-            this.driverService = driverService;
+        // Validate user has access to this company
+        UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
+        if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        /**
-         * Get available drivers (not currently assigned to vehicles)
-         */
-        @GetMapping("/available")
-        @Operation(summary = "Get available drivers", description = "Retrieve drivers available for vehicle assignment")
-        @SwaggerApiResponse(responseCode = "200", description = "Available drivers retrieved successfully")
-        @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-        public ResponseEntity<ApiResponse<List<DriverResponse>>> getAvailableDrivers(
-                @RequestParam @Parameter(description = "Company ID") UUID companyId,
-                Authentication authentication) {
+        List<DriverResponse> availableDrivers = driverService.getAvailableDrivers(companyId);
 
-            logger.debug("Get available drivers request for company: {}", companyId);
+        ApiResponse<List<DriverResponse>> response = ApiResponse.success(
+                availableDrivers,
+                "Available drivers retrieved successfully"
+        );
 
-            // Validate user has access to this company
-            UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
-            if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
-                return ResponseEntity.forbiddenResponse();
-            }
+        return ResponseEntity.ok(response);
+    }
 
-            List<DriverResponse> availableDrivers = driverService.getAvailableDrivers(companyId);
+    /**
+     * Validate if user is a driver and is available for assignment
+     */
+    @GetMapping("/{userId}/validate")
+    @Operation(summary = "Validate driver", description = "Check if user is a valid driver and available for assignment")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver validation completed")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
+    @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
+    public ResponseEntity<ApiResponse<DriverValidationResponse>> validateDriver(
+            @PathVariable @Parameter(description = "User ID") UUID userId,
+            @RequestParam @Parameter(description = "Company ID") UUID companyId,
+            Authentication authentication) {
 
-            ApiResponse<List<DriverResponse>> response = ApiResponse.success(
-                    availableDrivers,
-                    "Available drivers retrieved successfully"
-            );
+        logger.debug("Validate driver request for user: {} in company: {}", userId, companyId);
 
-            return ResponseEntity.ok(response);
+        // Validate user has access to this company
+        UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
+        if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        /**
-         * Validate if user is a driver and is available for assignment
-         */
-        @GetMapping("/{userId}/validate")
-        @Operation(summary = "Validate driver", description = "Check if user is a valid driver and available for assignment")
-        @SwaggerApiResponse(responseCode = "200", description = "Driver validation completed")
-        @SwaggerApiResponse(responseCode = "404", description = "User not found")
-        @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-        public ResponseEntity<ApiResponse<DriverValidationResponse>> validateDriver(
-                @PathVariable @Parameter(description = "User ID") UUID userId,
-                @RequestParam @Parameter(description = "Company ID") UUID companyId,
-                Authentication authentication) {
+        DriverValidationResponse validation = driverService.validateDriver(userId, companyId);
 
-            logger.debug("Validate driver request for user: {} in company: {}", userId, companyId);
+        ApiResponse<DriverValidationResponse> response = ApiResponse.success(
+                validation,
+                "Driver validation completed"
+        );
 
-            // Validate user has access to this company
-            UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
-            if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
-                return ResponseEntity.forbiddenResponse();
-            }
+        return ResponseEntity.ok(response);
+    }
 
-            DriverValidationResponse validation = driverService.validateDriver(userId, companyId);
+    /**
+     * Notify user service of driver assignment to vehicle
+     */
+    @PostMapping("/{userId}/assign-vehicle")
+    @Operation(summary = "Notify driver assignment", description = "Notify user service that driver has been assigned to a vehicle")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver assignment notification processed")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Driver not found")
+    @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> notifyDriverAssignment(
+            @PathVariable @Parameter(description = "Driver User ID") UUID userId,
+            @Valid @RequestBody DriverAssignmentNotification notification,
+            Authentication authentication) {
 
-            ApiResponse<DriverValidationResponse> response = ApiResponse.success(
-                    validation,
-                    "Driver validation completed"
-            );
+        logger.info("Driver assignment notification for user: {} to vehicle: {}",
+                userId, notification.getVehicleId());
 
-            return ResponseEntity.ok(response);
+        // Validate user has access to this company
+        UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
+        if (!hasAccessToCompany(requestingUserCompanyId, notification.getCompanyId(), authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        /**
-         * Notify user service of driver assignment to vehicle
-         */
-        @PostMapping("/{userId}/assign-vehicle")
-        @Operation(summary = "Notify driver assignment", description = "Notify user service that driver has been assigned to a vehicle")
-        @SwaggerApiResponse(responseCode = "200", description = "Driver assignment notification processed")
-        @SwaggerApiResponse(responseCode = "404", description = "Driver not found")
-        @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-        public ResponseEntity<ApiResponse<Void>> notifyDriverAssignment(
-                @PathVariable @Parameter(description = "Driver User ID") UUID userId,
-                @Valid @RequestBody DriverAssignmentNotification notification,
-                Authentication authentication) {
+        driverService.notifyDriverAssignment(userId, notification);
 
-            logger.info("Driver assignment notification for user: {} to vehicle: {}",
-                    userId, notification.getVehicleId());
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                "Driver assignment notification processed successfully"
+        );
 
-            // Validate user has access to this company
-            UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
-            if (!hasAccessToCompany(requestingUserCompanyId, notification.getCompanyId(), authentication)) {
-                return ResponseEntity.forbiddenResponse();
-            }
+        return ResponseEntity.ok(response);
+    }
 
-            driverService.notifyDriverAssignment(userId, notification);
+    /**
+     * Notify user service of driver unassignment from vehicle
+     */
+    @PostMapping("/{userId}/unassign-vehicle")
+    @Operation(summary = "Notify driver unassignment", description = "Notify user service that driver has been unassigned from vehicle")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver unassignment notification processed")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Driver not found")
+    @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> notifyDriverUnassignment(
+            @PathVariable @Parameter(description = "Driver User ID") UUID userId,
+            @RequestParam @Parameter(description = "Company ID") UUID companyId,
+            Authentication authentication) {
 
-            ApiResponse<Void> response = ApiResponse.success(
-                    null,
-                    "Driver assignment notification processed successfully"
-            );
+        logger.info("Driver unassignment notification for user: {} in company: {}", userId, companyId);
 
-            return ResponseEntity.ok(response);
+        // Validate user has access to this company
+        UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
+        if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        /**
-         * Notify user service of driver unassignment from vehicle
-         */
-        @PostMapping("/{userId}/unassign-vehicle")
-        @Operation(summary = "Notify driver unassignment", description = "Notify user service that driver has been unassigned from vehicle")
-        @SwaggerApiResponse(responseCode = "200", description = "Driver unassignment notification processed")
-        @SwaggerApiResponse(responseCode = "404", description = "Driver not found")
-        @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-        public ResponseEntity<ApiResponse<Void>> notifyDriverUnassignment(
-                @PathVariable @Parameter(description = "Driver User ID") UUID userId,
-                @RequestParam @Parameter(description = "Company ID") UUID companyId,
-                Authentication authentication) {
+        driverService.notifyDriverUnassignment(userId, companyId);
 
-            logger.info("Driver unassignment notification for user: {} in company: {}", userId, companyId);
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                "Driver unassignment notification processed successfully"
+        );
 
-            // Validate user has access to this company
-            UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
-            if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
-                return ResponseEntity.forbiddenResponse();
-            }
+        return ResponseEntity.ok(response);
+    }
 
-            driverService.notifyDriverUnassignment(userId, companyId);
+    /**
+     * Get driver statistics for company
+     */
+    @GetMapping("/statistics")
+    @Operation(summary = "Get driver statistics", description = "Retrieve driver statistics for the company")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver statistics retrieved successfully")
+    @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
+    public ResponseEntity<ApiResponse<DriverStatisticsResponse>> getDriverStatistics(
+            @RequestParam @Parameter(description = "Company ID") UUID companyId,
+            Authentication authentication) {
 
-            ApiResponse<Void> response = ApiResponse.success(
-                    null,
-                    "Driver unassignment notification processed successfully"
-            );
+        logger.debug("Get driver statistics for company: {}", companyId);
 
-            return ResponseEntity.ok(response);
+        // Validate user has access to this company
+        UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
+        if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        /**
-         * Get driver statistics for company
-         */
-        @GetMapping("/statistics")
-        @Operation(summary = "Get driver statistics", description = "Retrieve driver statistics for the company")
-        @SwaggerApiResponse(responseCode = "200", description = "Driver statistics retrieved successfully")
-        @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-        public ResponseEntity<ApiResponse<DriverStatisticsResponse>> getDriverStatistics(
-                @RequestParam @Parameter(description = "Company ID") UUID companyId,
-                Authentication authentication) {
+        DriverStatisticsResponse statistics = driverService.getDriverStatistics(companyId);
 
-            logger.debug("Get driver statistics for company: {}", companyId);
+        ApiResponse<DriverStatisticsResponse> response = ApiResponse.success(
+                statistics,
+                "Driver statistics retrieved successfully"
+        );
 
-            // Validate user has access to this company
-            UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
-            if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
-                return ResponseEntity.forbiddenResponse();
-            }
+        return ResponseEntity.ok(response);
+    }
 
-            DriverStatisticsResponse statistics = driverService.getDriverStatistics(companyId);
+    // Helper methods
+    private UUID getCompanyIdFromAuth(Authentication authentication) {
+        // Extract company ID from JWT token or user context
+        // Implementation depends on your security setup
+        return UUID.fromString(authentication.getDetails().toString());
+    }
 
-            ApiResponse<DriverStatisticsResponse> response = ApiResponse.success(
-                    statistics,
-                    "Driver statistics retrieved successfully"
-            );
-
-            return ResponseEntity.ok(response);
+    private boolean hasAccessToCompany(UUID userCompanyId, UUID targetCompanyId, Authentication authentication) {
+        // Check if user has access to the target company
+        // SUPER_ADMIN can access any company
+        if (authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
+            return true;
         }
 
-        // Helper methods
-        private UUID getCompanyIdFromAuth(Authentication authentication) {
-            // Extract company ID from JWT token or user context
-            // Implementation depends on your security setup
-            return UUID.fromString(authentication.getDetails().toString());
+        // Other users can only access their own company
+        return userCompanyId.equals(targetCompanyId);
+    }
+
+    public static class DriverStatisticsResponse {
+        private int totalDrivers;
+        private int availableDrivers;
+        private int assignedDrivers;
+        private int activeDrivers;
+        private int inactiveDrivers;
+
+        // Constructors
+        public DriverStatisticsResponse() {
         }
 
-        private boolean hasAccessToCompany(UUID userCompanyId, UUID targetCompanyId, Authentication authentication) {
-            // Check if user has access to the target company
-            // SUPER_ADMIN can access any company
-            if (authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
-                return true;
-            }
-
-            // Other users can only access their own company
-            return userCompanyId.equals(targetCompanyId);
+        public DriverStatisticsResponse(int totalDrivers, int availableDrivers, int assignedDrivers,
+                                        int activeDrivers, int inactiveDrivers) {
+            this.totalDrivers = totalDrivers;
+            this.availableDrivers = availableDrivers;
+            this.assignedDrivers = assignedDrivers;
+            this.activeDrivers = activeDrivers;
+            this.inactiveDrivers = inactiveDrivers;
         }
-    /
-        Supporting response
-        DTO
 
-        class DriverStatisticsResponse {
-            private int totalDrivers;
-            private int availableDrivers;
-            private int assignedDrivers;
-            private int activeDrivers;
-            private int inactiveDrivers;
+        // Getters and setters
+        public int getTotalDrivers() {
+            return totalDrivers;
+        }
 
-            // Constructors, getters, setters
-            public DriverStatisticsResponse() {
-            }
+        public void setTotalDrivers(int totalDrivers) {
+            this.totalDrivers = totalDrivers;
+        }
 
-            public DriverStatisticsResponse(int totalDrivers, int availableDrivers, int assignedDrivers,
-                                            int activeDrivers, int inactiveDrivers) {
-                this.totalDrivers = totalDrivers;
-                this.availableDrivers = availableDrivers;
-                this.assignedDrivers = assignedDrivers;
-                this.activeDrivers = activeDrivers;
-                this.inactiveDrivers = inactiveDrivers;
-            }
+        public int getAvailableDrivers() {
+            return availableDrivers;
+        }
 
-            // Getters and setters
-            public int getTotalDrivers() {
-                return totalDrivers;
-            }
+        public void setAvailableDrivers(int availableDrivers) {
+            this.availableDrivers = availableDrivers;
+        }
 
-            public void setTotalDrivers(int totalDrivers) {
-                this.totalDrivers = totalDrivers;
-            }
+        public int getAssignedDrivers() {
+            return assignedDrivers;
+        }
 
-            public int getAvailableDrivers() {
-                return availableDrivers;
-            }
+        public void setAssignedDrivers(int assignedDrivers) {
+            this.assignedDrivers = assignedDrivers;
+        }
 
-            public void setAvailableDrivers(int availableDrivers) {
-                this.availableDrivers = availableDrivers;
-            }
+        public int getActiveDrivers() {
+            return activeDrivers;
+        }
 
-            public int getAssignedDrivers() {
-                return assignedDrivers;
-            }
+        public void setActiveDrivers(int activeDrivers) {
+            this.activeDrivers = activeDrivers;
+        }
 
-            public void setAssignedDrivers(int assignedDrivers) {
-                this.assignedDrivers = assignedDrivers;
-            }
+        public int getInactiveDrivers() {
+            return inactiveDrivers;
+        }
 
-            public int getActiveDrivers() {
-                return activeDrivers;
-            }
-
-            public void setActiveDrivers(int activeDrivers) {
-                this.activeDrivers = activeDrivers;
-            }
-
-            public int getInactiveDrivers() {
-                return inactiveDrivers;
-            }
-
-            public void setInactiveDrivers(int inactiveDrivers) {
-                this.inactiveDrivers = inactiveDrivers;
-            }
+        public void setInactiveDrivers(int inactiveDrivers) {
+            this.inactiveDrivers = inactiveDrivers;
         }
     }
-    }
+}

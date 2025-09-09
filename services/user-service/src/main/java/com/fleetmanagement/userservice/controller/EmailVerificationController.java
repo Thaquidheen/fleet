@@ -1,11 +1,11 @@
 package com.fleetmanagement.userservice.controller;
 
-import com.fleetmanagement.userservice.dto.response.ApiResponse;
+//import com.fleetmanagement.userservice.dto.response.ApiResponse;
 import com.fleetmanagement.userservice.service.EmailVerificationService;
 import com.fleetmanagement.userservice.service.EmailVerificationService.EmailVerificationStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
