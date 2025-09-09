@@ -10,6 +10,7 @@ import com.fleetmanagement.companyservice.service.CompanyService;
 import com.fleetmanagement.companyservice.service.CompanyUserManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 /**
  * Company Controller
  *
@@ -85,7 +87,6 @@ public class CompanyController {
 
     @GetMapping
     @Operation(summary = "Get all companies", description = "Retrieve all companies with pagination (SUPER_ADMIN only)")
-    @SwaggerApiResponse(responseCode = "200", description = "Companies retrieved successfully")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Page<CompanyResponse>>> getAllCompanies(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
@@ -110,8 +111,6 @@ public class CompanyController {
 
     @GetMapping("/{companyId}")
     @Operation(summary = "Get company by ID", description = "Retrieve company information by ID")
-    @SwaggerApiResponse(responseCode = "200", description = "Company found")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or @companyService.canAccessCompany(authentication.name, #companyId)")
     public ResponseEntity<ApiResponse<CompanyResponse>> getCompanyById(@PathVariable UUID companyId) {
         logger.info("Get company request for ID: {}", companyId);
@@ -128,8 +127,6 @@ public class CompanyController {
 
     @GetMapping("/subdomain/{subdomain}")
     @Operation(summary = "Get company by subdomain", description = "Retrieve company information by subdomain")
-    @SwaggerApiResponse(responseCode = "200", description = "Company found")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     public ResponseEntity<ApiResponse<CompanyResponse>> getCompanyBySubdomain(@PathVariable String subdomain) {
         logger.info("Get company request for subdomain: {}", subdomain);
 
@@ -145,9 +142,6 @@ public class CompanyController {
 
     @PutMapping("/{companyId}")
     @Operation(summary = "Update company", description = "Update company information")
-    @SwaggerApiResponse(responseCode = "200", description = "Company updated successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
-    @SwaggerApiResponse(responseCode = "400", description = "Invalid company data")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(
             @PathVariable UUID companyId,
@@ -174,7 +168,6 @@ public class CompanyController {
 
     @GetMapping("/search")
     @Operation(summary = "Search companies", description = "Search companies by name, email, or industry")
-    @SwaggerApiResponse(responseCode = "200", description = "Search completed successfully")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Page<CompanyResponse>>> searchCompanies(
             @Parameter(description = "Search term") @RequestParam String q,
@@ -200,7 +193,6 @@ public class CompanyController {
 
     @GetMapping("/status/{status}")
     @Operation(summary = "Get companies by status", description = "Retrieve companies by status")
-    @SwaggerApiResponse(responseCode = "200", description = "Companies retrieved successfully")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Page<CompanyResponse>>> getCompaniesByStatus(
             @PathVariable CompanyStatus status,
@@ -226,7 +218,6 @@ public class CompanyController {
 
     @GetMapping("/active")
     @Operation(summary = "Get active companies", description = "Retrieve all active companies")
-    @SwaggerApiResponse(responseCode = "200", description = "Active companies retrieved successfully")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Page<CompanyResponse>>> getActiveCompanies(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
@@ -253,8 +244,6 @@ public class CompanyController {
 
     @PutMapping("/{companyId}/subscription")
     @Operation(summary = "Update subscription plan", description = "Update company subscription plan (SUPER_ADMIN only)")
-    @SwaggerApiResponse(responseCode = "200", description = "Subscription updated successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<CompanyResponse>> updateSubscriptionPlan(
             @PathVariable UUID companyId,
@@ -278,8 +267,6 @@ public class CompanyController {
 
     @PutMapping("/{companyId}/suspend")
     @Operation(summary = "Suspend company", description = "Suspend company operations (SUPER_ADMIN only)")
-    @SwaggerApiResponse(responseCode = "200", description = "Company suspended successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> suspendCompany(
             @PathVariable UUID companyId,
@@ -304,8 +291,6 @@ public class CompanyController {
 
     @PutMapping("/{companyId}/activate")
     @Operation(summary = "Activate company", description = "Activate company operations (SUPER_ADMIN only)")
-    @SwaggerApiResponse(responseCode = "200", description = "Company activated successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> activateCompany(
             @PathVariable UUID companyId,
@@ -335,8 +320,6 @@ public class CompanyController {
      */
     @GetMapping("/{companyId}/validation/user-limit")
     @Operation(summary = "Validate user limit", description = "Check if company can add more users based on subscription")
-    @SwaggerApiResponse(responseCode = "200", description = "User limit validation completed")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     public ResponseEntity<ApiResponse<CompanyValidationResponse>> validateUserLimit(
             @PathVariable @Parameter(description = "Company ID") UUID companyId) {
 
@@ -357,8 +340,6 @@ public class CompanyController {
      */
     @PostMapping("/{companyId}/users/increment")
     @Operation(summary = "Increment user count", description = "Increment the user count for company")
-    @SwaggerApiResponse(responseCode = "200", description = "User count incremented successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     public ResponseEntity<ApiResponse<Void>> incrementUserCount(
             @PathVariable @Parameter(description = "Company ID") UUID companyId) {
 
@@ -379,8 +360,6 @@ public class CompanyController {
      */
     @PostMapping("/{companyId}/users/decrement")
     @Operation(summary = "Decrement user count", description = "Decrement the user count for company")
-    @SwaggerApiResponse(responseCode = "200", description = "User count decremented successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     public ResponseEntity<ApiResponse<Void>> decrementUserCount(
             @PathVariable @Parameter(description = "Company ID") UUID companyId) {
 
@@ -401,8 +380,6 @@ public class CompanyController {
      */
     @GetMapping("/{companyId}/users")
     @Operation(summary = "Get company users", description = "Retrieve all users for a company with pagination")
-    @SwaggerApiResponse(responseCode = "200", description = "Company users retrieved successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getCompanyUsers(
             @PathVariable @Parameter(description = "Company ID") UUID companyId,
@@ -432,9 +409,6 @@ public class CompanyController {
      */
     @PostMapping("/{companyId}/users/bulk-operations")
     @Operation(summary = "Bulk user operations", description = "Perform bulk operations on users (create, update, delete)")
-    @SwaggerApiResponse(responseCode = "200", description = "Bulk operation completed")
-    @SwaggerApiResponse(responseCode = "400", description = "Invalid bulk operation request")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<BulkOperationResponse>> performBulkUserOperations(
             @PathVariable @Parameter(description = "Company ID") UUID companyId,
@@ -461,8 +435,6 @@ public class CompanyController {
      */
     @PostMapping("/{companyId}/users/synchronize")
     @Operation(summary = "Synchronize user count", description = "Synchronize user count with User Service")
-    @SwaggerApiResponse(responseCode = "200", description = "User count synchronized successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> synchronizeUserCount(
             @PathVariable @Parameter(description = "Company ID") UUID companyId,
@@ -488,8 +460,6 @@ public class CompanyController {
      */
     @GetMapping("/{companyId}/users/statistics")
     @Operation(summary = "Get user statistics", description = "Get comprehensive user statistics for company")
-    @SwaggerApiResponse(responseCode = "200", description = "User statistics retrieved successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<UserStatisticsResponse>> getUserStatistics(
             @PathVariable @Parameter(description = "Company ID") UUID companyId,
@@ -515,8 +485,6 @@ public class CompanyController {
      */
     @GetMapping("/{companyId}/users/summary")
     @Operation(summary = "Get user count summary", description = "Get quick summary of user counts for company")
-    @SwaggerApiResponse(responseCode = "200", description = "User summary retrieved successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<UserCountSummaryResponse>> getUserCountSummary(
             @PathVariable @Parameter(description = "Company ID") UUID companyId,
@@ -555,8 +523,6 @@ public class CompanyController {
      */
     @PostMapping("/{companyId}/users/validate-bulk-creation")
     @Operation(summary = "Validate bulk user creation", description = "Check if company can create specified number of users")
-    @SwaggerApiResponse(responseCode = "200", description = "Bulk creation validation completed")
-    @SwaggerApiResponse(responseCode = "404", description = "Company not found")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMPANY_ADMIN')")
     public ResponseEntity<ApiResponse<BulkCreationValidationResponse>> validateBulkUserCreation(
             @PathVariable @Parameter(description = "Company ID") UUID companyId,
