@@ -20,4 +20,8 @@ public class ChangePasswordRequest {
 
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
+
+    public boolean isPasswordConfirmed() {
+        return newPassword != null && newPassword.equals(confirmPassword);
+    }
 }

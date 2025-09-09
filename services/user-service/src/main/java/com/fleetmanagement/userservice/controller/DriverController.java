@@ -87,9 +87,6 @@ public class DriverController {
         return ResponseEntity.ok(user);
     }
 
-    /**
-     * Get available drivers (not currently assigned to vehicles)
-     */
     @GetMapping("/available")
     @Operation(summary = "Get available drivers", description = "Retrieve drivers available for vehicle assignment")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Available drivers retrieved successfully")
@@ -100,7 +97,6 @@ public class DriverController {
 
         logger.debug("Get available drivers request for company: {}", companyId);
 
-        // Validate user has access to this company
         UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
         if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -116,9 +112,6 @@ public class DriverController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Validate if user is a driver and is available for assignment
-     */
     @GetMapping("/{userId}/validate")
     @Operation(summary = "Validate driver", description = "Check if user is a valid driver and available for assignment")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver validation completed")
@@ -131,7 +124,6 @@ public class DriverController {
 
         logger.debug("Validate driver request for user: {} in company: {}", userId, companyId);
 
-        // Validate user has access to this company
         UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
         if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -147,9 +139,6 @@ public class DriverController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Notify user service of driver assignment to vehicle
-     */
     @PostMapping("/{userId}/assign-vehicle")
     @Operation(summary = "Notify driver assignment", description = "Notify user service that driver has been assigned to a vehicle")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver assignment notification processed")
@@ -163,7 +152,6 @@ public class DriverController {
         logger.info("Driver assignment notification for user: {} to vehicle: {}",
                 userId, notification.getVehicleId());
 
-        // Validate user has access to this company
         UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
         if (!hasAccessToCompany(requestingUserCompanyId, notification.getCompanyId(), authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -179,9 +167,6 @@ public class DriverController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Notify user service of driver unassignment from vehicle
-     */
     @PostMapping("/{userId}/unassign-vehicle")
     @Operation(summary = "Notify driver unassignment", description = "Notify user service that driver has been unassigned from vehicle")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver unassignment notification processed")
@@ -194,7 +179,6 @@ public class DriverController {
 
         logger.info("Driver unassignment notification for user: {} in company: {}", userId, companyId);
 
-        // Validate user has access to this company
         UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
         if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -210,9 +194,6 @@ public class DriverController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get driver statistics for company
-     */
     @GetMapping("/statistics")
     @Operation(summary = "Get driver statistics", description = "Retrieve driver statistics for the company")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Driver statistics retrieved successfully")
@@ -223,7 +204,6 @@ public class DriverController {
 
         logger.debug("Get driver statistics for company: {}", companyId);
 
-        // Validate user has access to this company
         UUID requestingUserCompanyId = getCompanyIdFromAuth(authentication);
         if (!hasAccessToCompany(requestingUserCompanyId, companyId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -239,22 +219,16 @@ public class DriverController {
         return ResponseEntity.ok(response);
     }
 
-    // Helper methods
     private UUID getCompanyIdFromAuth(Authentication authentication) {
-        // Extract company ID from JWT token or user context
-        // Implementation depends on your security setup
         return UUID.fromString(authentication.getDetails().toString());
     }
 
     private boolean hasAccessToCompany(UUID userCompanyId, UUID targetCompanyId, Authentication authentication) {
-        // Check if user has access to the target company
-        // SUPER_ADMIN can access any company
         if (authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
             return true;
         }
 
-        // Other users can only access their own company
         return userCompanyId.equals(targetCompanyId);
     }
 
@@ -265,7 +239,6 @@ public class DriverController {
         private int activeDrivers;
         private int inactiveDrivers;
 
-        // Constructors
         public DriverStatisticsResponse() {
         }
 
@@ -278,7 +251,6 @@ public class DriverController {
             this.inactiveDrivers = inactiveDrivers;
         }
 
-        // Getters and setters
         public int getTotalDrivers() {
             return totalDrivers;
         }

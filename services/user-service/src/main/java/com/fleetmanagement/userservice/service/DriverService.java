@@ -1,9 +1,11 @@
 package com.fleetmanagement.userservice.service;
 
+import com.fleetmanagement.userservice.controller.DriverController;
 import com.fleetmanagement.userservice.domain.entity.User;
 import com.fleetmanagement.userservice.domain.enums.UserRole;
-import com.fleetmanagement.userservice.dto.request.DriverAssignmentRequest;
+import com.fleetmanagement.userservice.dto.request.DriverAssignmentNotification;
 import com.fleetmanagement.userservice.dto.response.DriverResponse;
+import com.fleetmanagement.userservice.dto.response.DriverValidationResponse;
 import com.fleetmanagement.userservice.dto.response.UserResponse;
 import com.fleetmanagement.userservice.repository.UserRepository;
 import org.slf4j.Logger;
@@ -59,7 +61,6 @@ public class DriverService {
         user.setRole(UserRole.DRIVER);
         User savedUser = userRepository.save(user);
 
-        // Clear cache
         cacheService.evictUser(userId);
 
         logger.info("User {} promoted to driver", userId);
@@ -74,10 +75,9 @@ public class DriverService {
             throw new IllegalArgumentException("User is not a driver");
         }
 
-        user.setRole(UserRole.FLEET_MANAGER); // Default demotion role
+        user.setRole(UserRole.FLEET_MANAGER);
         User savedUser = userRepository.save(user);
 
-        // Clear cache
         cacheService.evictUser(userId);
 
         logger.info("User {} demoted from driver", userId);
@@ -96,9 +96,21 @@ public class DriverService {
         return convertToDriverResponse(driver);
     }
 
+    public DriverValidationResponse validateDriver(UUID userId, UUID companyId) {
+        return new DriverValidationResponse();
+    }
+
+    public void notifyDriverAssignment(UUID userId, DriverAssignmentNotification notification) {
+    }
+
+    public void notifyDriverUnassignment(UUID userId, UUID companyId) {
+    }
+
+    public DriverController.DriverStatisticsResponse getDriverStatistics(UUID companyId) {
+        return new DriverController.DriverStatisticsResponse();
+    }
+
     private boolean isDriverAvailable(User driver) {
-        // Logic to check if driver is available (not assigned to a vehicle, not on leave, etc.)
-        // This would integrate with Vehicle Service to check current assignments
         return driver.getStatus().name().equals("ACTIVE");
     }
 
@@ -108,14 +120,13 @@ public class DriverService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
-                .phone(user.getPhone())
+                .phoneNumber(user.getPhone())
                 .licenseNumber(user.getLicenseNumber())
-                .licenseExpiry(user.getLicenseExpiry() != null ?
-                        user.getLicenseExpiry().toLocalDate() : null) // Convert LocalDateTime to LocalDate
-                .status(user.getStatus().name())
+                .licenseExpiryDate(user.getLicenseExpiry())
+                .status(user.getStatus())
                 .companyId(user.getCompanyId())
                 .createdAt(user.getCreatedAt())
-                .available(isDriverAvailable(user)) // Add the available flag
+                .isAvailable(isDriverAvailable(user))
                 .build();
     }
 
@@ -128,8 +139,8 @@ public class DriverService {
                 .lastName(user.getLastName())
                 .fullName(user.getFullName())
                 .phoneNumber(user.getPhoneNumber())
-                .role(user.getRole()) // Use UserRole enum directly, not string
-                .status(user.getStatus()) // Use UserStatus enum directly, not string
+                .role(user.getRole())
+                .status(user.getStatus())
                 .companyId(user.getCompanyId())
                 .employeeId(user.getEmployeeId())
                 .department(user.getDepartment())
