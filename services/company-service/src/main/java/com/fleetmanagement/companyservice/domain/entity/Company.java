@@ -122,6 +122,27 @@ public class Company {
     private Long version;
 
     // Business methods
+
+    public UUID getId() { return id; }
+    public String getName() { return name; }
+    public String getSubdomain() { return subdomain; }
+    public String getIndustry() { return industry; }
+    public String getPhone() { return phone; }
+    public String getEmail() { return email; }
+    public String getWebsite() { return website; }
+    public String getAddress() { return address; }
+    public String getLogoUrl() { return logoUrl; }
+    public String getTimezone() { return timezone; }
+    public String getLanguage() { return language; }
+    public String getNotes() { return notes; }
+    public String getContactPersonName() { return contactPersonName; }
+
+    public String getContactPersonTitle() { return contactPersonTitle; }
+
+    public String getContactPersonEmail() { return contactPersonEmail; }
+
+    public String getContactPersonPhone() { return contactPersonPhone; }
+
     public boolean canAddUser() {
         return currentUserCount < maxUsers;
     }

@@ -1,5 +1,4 @@
-// BulkUserOperationRequest.java
-package dto.request;
+package com.fleetmanagement.companyservice.dto.request;
 
 import com.fleetmanagement.companyservice.domain.enums.BulkOperationType;
 import jakarta.validation.Valid;

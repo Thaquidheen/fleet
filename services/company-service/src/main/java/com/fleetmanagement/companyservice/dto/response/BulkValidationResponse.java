@@ -5,18 +5,15 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompanyValidationResponse {
-    private UUID companyId;
-    private String subscriptionPlan;
+public class BulkValidationResponse {
+    private boolean canCreate;
+    private String message;
     private int currentUsers;
     private int maxUsers;
+    private int requestedUsers;
     private int availableSlots;
-    private boolean canAddUser;
-    private String message;
 }

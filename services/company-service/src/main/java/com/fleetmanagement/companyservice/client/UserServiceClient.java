@@ -3,7 +3,6 @@ package com.fleetmanagement.companyservice.client;
 import com.fleetmanagement.companyservice.dto.request.BulkUserCreateRequest;
 import com.fleetmanagement.companyservice.dto.request.BulkUserUpdateRequest;
 import com.fleetmanagement.companyservice.dto.response.UserResponse;
-import com.fleetmanagement.companyservice.dto.response.UserCountResponse;
 import com.fleetmanagement.companyservice.dto.response.BulkOperationResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;

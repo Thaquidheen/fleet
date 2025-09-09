@@ -22,9 +22,21 @@ public class BulkUserUpdateRequest {
 
     @NotEmpty(message = "Users list cannot be empty")
     @Valid
-    private List<UpdateUserRequest> users;
+    private List<UserUpdateInfo> users;
 
     private UUID updatedBy;
     private String bulkOperationId;
     private String reason; // Reason for bulk update
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserUpdateInfo {
+        @NotNull(message = "User ID is required")
+        private UUID userId;
+
+        @Valid
+        private UpdateUserRequest updateRequest;
+    }
 }
