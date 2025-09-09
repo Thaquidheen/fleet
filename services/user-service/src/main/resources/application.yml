@@ -156,9 +156,18 @@ app:
     email-verification-token-validity: 24  # hours
 
   # Session Configuration
+  driver:
+    max-concurrent-assignments: 1
+    assignment-timeout-hours: 24
+    availability-cache-duration: 300
+
+    # Session management settings
   session:
-    max-concurrent-sessions: 3
-    session-timeout: 30  # minutes
+    max-concurrent-sessions: 5
+    timeout-hours: 24
+    activity-timeout-minutes: 30
+    cleanup-enabled: true
+    redis-key-prefix: "user:session:"
 
   # Rate Limiting
   rate-limit:

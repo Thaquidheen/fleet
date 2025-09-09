@@ -42,7 +42,14 @@ public class UserService {
     private final EmailService emailService;
     private final CacheService cacheService;
     private final PasswordService passwordService;
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
+    @Autowired
+    private RedisSessionService sessionService;
+
+    @Autowired
+    private EventPublishingService eventPublishingService;
     @Autowired
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
@@ -65,6 +72,7 @@ public class UserService {
      */
     @Transactional
     public UserResponse createUser(CreateUserRequest request, UUID createdBy) {
+
         logger.info("Creating new user with username: {} for company: {}",
                 request.getUsername(), request.getCompanyId());
 
@@ -124,9 +132,11 @@ public class UserService {
         user.setEmailVerificationToken(verificationToken);
         user.setEmailVerificationExpiry(LocalDateTime.now().plusHours(24));
 
+
         // 6. Save user
         User savedUser = userRepository.save(user);
-
+        emailVerificationService.sendVerificationEmail(savedUser.getId());
+        eventPublishingService.publishUserCreatedEvent(savedUser);
         // 7. NEW: Increment company user count
         try {
             subscriptionValidationService.incrementUserCount(request.getCompanyId());
@@ -138,16 +148,17 @@ public class UserService {
         }
 
         // 8. Send verification email (your existing logic with enhanced error handling)
-        try {
-            emailService.sendEmailVerification(savedUser.getEmail(),
-                    savedUser.getFullName(),
-                    verificationToken);
-            logger.info("Verification email sent to: {}", savedUser.getEmail());
-        } catch (Exception e) {
-            logger.error("Failed to send verification email to {}: {}",
-                    savedUser.getEmail(), e.getMessage());
-            // Email failure shouldn't prevent user creation
-        }
+//        try {
+//            emailService.sendEmailVerification(savedUser.getEmail(),
+//                    savedUser.getFullName(),
+//                    verificationToken);
+//            logger.info("Verification email sent to: {}", savedUser.getEmail());
+//        } catch (Exception e) {
+//            logger.error("Failed to send verification email to {}: {}",
+//                    savedUser.getEmail(), e.getMessage());
+//            // Email failure shouldn't prevent user creation
+//        }
+
 
         // 9. Cache the user (your existing logic)
         UserResponse response = convertToUserResponse(savedUser);
