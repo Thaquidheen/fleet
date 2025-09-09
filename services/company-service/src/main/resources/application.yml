@@ -23,8 +23,13 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         jdbc:
-          lob:
-            non_contextual_creation: true
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        # CRITICAL: Add this for PostgreSQL enum support
+        globally_quoted_identifiers: false
+        # This helps with enum handling
+        default_schema: public
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
