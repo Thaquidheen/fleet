@@ -22,6 +22,7 @@ public class DriverResponse {
     private String email;
     private String phoneNumber;
     private UserStatus status;
+    private UUID companyId;
     private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private boolean isAvailable;

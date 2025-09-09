@@ -120,7 +120,7 @@ public class DriverService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
-                .phoneNumber(user.getPhone())
+                .phoneNumber(user.getPhoneNumber())
                 .licenseNumber(user.getLicenseNumber())
                 .licenseExpiryDate(user.getLicenseExpiry())
                 .status(user.getStatus())

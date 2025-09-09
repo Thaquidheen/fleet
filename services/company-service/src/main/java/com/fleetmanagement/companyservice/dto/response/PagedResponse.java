@@ -1,4 +1,4 @@
-// PagedResponse.java (Generic paging response)
+// PagedResponse.java
 package com.fleetmanagement.companyservice.dto.response;
 
 import lombok.Data;
@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PagedResponse<T> {
+
     private List<T> content;
     private int page;
     private int size;
@@ -21,6 +22,19 @@ public class PagedResponse<T> {
     private boolean first;
     private boolean last;
     private boolean empty;
-    private String sortBy;
-    private String sortDirection;
+
+    public static <T> PagedResponse<T> of(List<T> content, int page, int size, long totalElements) {
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return PagedResponse.<T>builder()
+                .content(content)
+                .page(page)
+                .size(size)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
+                .first(page == 0)
+                .last(page >= totalPages - 1)
+                .empty(content.isEmpty())
+                .build();
+    }
 }

@@ -5,3 +5,5 @@
 ALTER TABLE users
 ADD COLUMN license_number VARCHAR(50),
 ADD COLUMN license_expiry TIMESTAMP;
+
+ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMP;

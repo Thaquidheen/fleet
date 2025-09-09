@@ -89,6 +89,9 @@ public class User {
     @Builder.Default
     private Boolean emailVerified = false;
 
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
     @Column(name = "phone_verified", nullable = false)
     @Builder.Default
     private Boolean phoneVerified = false;
@@ -165,6 +168,8 @@ public class User {
     @Column(name = "created_by")
     private UUID createdBy;
 
+
+
     @Column(name = "updated_by")
     private UUID updatedBy;
 
@@ -190,6 +195,11 @@ public class User {
     // Business Methods
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+
+    public boolean isEmailVerified() {
+        return Boolean.TRUE.equals(this.emailVerified);
     }
 
     public boolean hasRole(UserRole requiredRole) {
@@ -265,9 +275,21 @@ public class User {
         resetFailedLoginAttempts();
     }
 
-    public boolean isEmailVerificationExpired() {
-        return emailVerificationExpiry != null && emailVerificationExpiry.isBefore(LocalDateTime.now());
+    /**
+     * Get when email was verified
+     */
+    public LocalDateTime getEmailVerifiedAt() {
+        return this.emailVerifiedAt;
     }
+
+    /**
+     * Set when email was verified
+     */
+    public void setEmailVerifiedAt(LocalDateTime emailVerifiedAt) {
+        this.emailVerifiedAt = emailVerifiedAt;
+    }
+
+
 
     public boolean isPasswordResetExpired() {
         return passwordResetExpiry != null && passwordResetExpiry.isBefore(LocalDateTime.now());
@@ -299,6 +321,11 @@ public class User {
     public LocalDateTime getLastPasswordChange() {
         // Return lastPasswordChange if set, otherwise return passwordChangedAt
         return lastPasswordChange != null ? lastPasswordChange : passwordChangedAt;
+    }
+
+    public boolean isEmailVerificationExpired() {
+        return this.emailVerificationExpiry != null &&
+                this.emailVerificationExpiry.isBefore(LocalDateTime.now());
     }
 
     public void setLastPasswordChange(LocalDateTime lastPasswordChange) {

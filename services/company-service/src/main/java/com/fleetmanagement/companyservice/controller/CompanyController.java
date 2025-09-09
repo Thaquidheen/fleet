@@ -10,10 +10,10 @@ import com.fleetmanagement.companyservice.service.CompanyService;
 import com.fleetmanagement.companyservice.service.CompanyUserManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Validated;
+import org.springframework.validation.annotation.Validated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
 /**
  * Company Controller
  *
@@ -62,9 +61,10 @@ public class CompanyController {
 
     @PostMapping
     @Operation(summary = "Create company", description = "Create a new company (SUPER_ADMIN only)")
-    @SwaggerApiResponse(responseCode = "201", description = "Company created successfully")
-    @SwaggerApiResponse(responseCode = "400", description = "Invalid company data")
-    @SwaggerApiResponse(responseCode = "409", description = "Company already exists")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Company created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid company data")
+    })
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<CompanyResponse>> createCompany(
             @Valid @RequestBody CreateCompanyRequest request,

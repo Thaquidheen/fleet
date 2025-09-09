@@ -38,27 +38,31 @@ public class EmailService {
     }
 
     @Async
-    public void sendVerificationEmail(User user) {
+    public void sendVerificationEmail(String email, String fullName, String verificationToken) {
         try {
-            String verificationUrl = verificationBaseUrl + "?token=" + user.getEmailVerificationToken();
+            String verificationUrl = verificationBaseUrl + "?token=" + verificationToken;
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setFrom(fromEmail);
-            helper.setTo(user.getEmail());
+            helper.setTo(email);
             helper.setSubject("Verify Your Email - Fleet Management System");
 
-            String htmlContent = buildVerificationEmailContent(user.getFirstName(), verificationUrl);
+            String htmlContent = buildVerificationEmailContent(fullName, verificationUrl);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            logger.info("Verification email sent to: {}", user.getEmail());
+            logger.info("Verification email sent to: {}", email);
 
         } catch (MessagingException e) {
-            logger.error("Failed to send verification email to: {}", user.getEmail(), e);
+            logger.error("Failed to send verification email to: {}", email, e);
+            throw new RuntimeException("Failed to send verification email", e);
         }
     }
+
+
+
 
     @Async
     public void sendPasswordResetEmail(User user, String resetToken) {
@@ -147,15 +151,9 @@ public class EmailService {
     }
 
 
-    public void sendEmailVerification(String email, String fullName, String token) {
-        // Create a user object for the existing method
-        User tempUser = User.builder()
-                .email(email)
-                .firstName(fullName.split(" ")[0])
-                .emailVerificationToken(token)
-                .build();
-
-        sendVerificationEmail(tempUser);
+    @Async
+    public void sendEmailVerification(String email, String fullName, String verificationToken) {
+        sendVerificationEmail(email, fullName, verificationToken);
     }
 
     public void sendPasswordReset(String email, String fullName, String token) {
