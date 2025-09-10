@@ -1,33 +1,29 @@
-**
-        * Create Vehicle Group Request DTO
- */
+
+package com.fleetmanagement.vehicleservice.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.util.UUID;
+
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CreateVehicleGroupRequest {
 
     @NotBlank(message = "Group name is required")
-    @Size(max = 100, message = "Group name must not exceed 100 characters")
+    @Size(max = 100, message = "Group name cannot exceed 100 characters")
     private String name;
 
-    @Size(max = 1000, message = "Description must not exceed 1000 characters")
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
     private UUID parentGroupId;
 
-    @NotNull(message = "Group type is required")
-    private GroupType groupType;
-
-    @Min(value = 1, message = "Max vehicles must be at least 1")
-    private Integer maxVehicles;
-
-    @Size(max = 255, message = "Location must not exceed 255 characters")
-    private String location;
-
-    private UUID managerId;
-
-    private Map<String, Object> customFields;
-
-    private Integer sortOrder;
+    private String groupType;
 }

@@ -32,7 +32,7 @@
         <redis.version>5.0.1</redis.version>
 
         <!-- Messaging & Communication -->
-        <kafka.version>3.6.0</kafka.version>
+        <kafka.version>3.3.2</kafka.version>
         <netty.version>4.1.104.Final</netty.version>
 
         <!-- Monitoring & Observability -->

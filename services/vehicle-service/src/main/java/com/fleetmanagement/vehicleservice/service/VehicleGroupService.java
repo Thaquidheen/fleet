@@ -367,3 +367,6 @@ public class VehicleGroupService {
         if (request.getCustomFields() != null) {
             vehicleGroup.setCustomFields(request.getCustomFields());
         }
+    }
+
+}

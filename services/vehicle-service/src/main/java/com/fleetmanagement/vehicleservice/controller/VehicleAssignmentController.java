@@ -7,7 +7,7 @@ import com.fleetmanagement.vehicleservice.dto.response.VehicleAssignmentResponse
 import com.fleetmanagement.vehicleservice.service.VehicleAssignmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

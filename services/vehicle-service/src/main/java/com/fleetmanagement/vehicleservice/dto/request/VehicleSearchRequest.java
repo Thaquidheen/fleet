@@ -1,6 +1,21 @@
 /**
  * Vehicle Search Request DTO
  */
+
+import java.util.UUID;
+import java.time.LocalDate;
+import java.math.BigDecimal;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import jakarta.validation.constraints.*;
+import com.fleetmanagement.vehicleservice.domain.enums.VehicleStatus;
+import com.fleetmanagement.vehicleservice.domain.enums.VehicleType;
+import com.fleetmanagement.vehicleservice.domain.enums.VehicleCategory;
+import com.fleetmanagement.vehicleservice.domain.enums.FuelType;
+
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,3 +1,17 @@
+package com.fleetmanagement.vehicleservice.dto.request;
+
+import com.fleetmanagement.vehicleservice.domain.enums.AssignmentType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Assign Driver Request DTO
  */

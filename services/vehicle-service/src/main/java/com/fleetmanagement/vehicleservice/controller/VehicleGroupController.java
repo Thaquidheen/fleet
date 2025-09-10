@@ -213,6 +213,7 @@ public class VehicleGroupController {
 
         return ResponseEntity.ok(response);
     }
+}
 
     /**
      * Get complete group hierarchy

@@ -1,3 +1,5 @@
+package com.fleetmanagement.vehicleservice.domain.enums;
+
 /**
  * Document Type Enum
  * Represents different types of vehicle documents
@@ -6,8 +8,11 @@ public enum DocumentType {
     REGISTRATION("Registration", "Vehicle registration documents"),
     INSURANCE("Insurance", "Insurance policy documents"),
     INSPECTION("Inspection", "Vehicle inspection certificates"),
-    LICENSE("License", "Special licenses and permits"),
-    OTHER("Other", "Other vehicle-related documents");
+    MAINTENANCE("Maintenance", "Maintenance records and certificates"),
+    WARRANTY("Warranty", "Warranty information and documents"),
+    PURCHASE("Purchase", "Purchase agreements and invoices"),
+    LEASE("Lease", "Lease agreements and contracts"),
+    OTHER("Other", "Other miscellaneous documents");
 
     private final String displayName;
     private final String description;
@@ -26,10 +31,10 @@ public enum DocumentType {
     }
 
     public boolean hasExpiryDate() {
-        return this == REGISTRATION || this == INSURANCE || this == INSPECTION || this == LICENSE;
+        return this == REGISTRATION || this == INSURANCE || this == INSPECTION || this == WARRANTY;
     }
 
-    public boolean isMandatory() {
+    public boolean isRequired() {
         return this == REGISTRATION || this == INSURANCE;
     }
 }

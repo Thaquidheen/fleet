@@ -1,12 +1,16 @@
+package com.fleetmanagement.vehicleservice.domain.enums;
+
 /**
  * Assignment Status Enum
- * Represents the status of vehicle-driver assignments
+ * Represents the current status of a vehicle assignment
  */
 public enum AssignmentStatus {
-    ASSIGNED("Assigned", "Vehicle is currently assigned to driver"),
-    UNASSIGNED("Unassigned", "Vehicle is not assigned to any driver"),
-    TEMPORARY("Temporary", "Temporary assignment"),
-    EXPIRED("Expired", "Assignment has expired");
+    ACTIVE("Active", "Assignment is currently active"),
+    PENDING("Pending", "Assignment is scheduled for future"),
+    COMPLETED("Completed", "Assignment has been completed"),
+    CANCELLED("Cancelled", "Assignment was cancelled"),
+    EXPIRED("Expired", "Assignment has expired"),
+    SUSPENDED("Suspended", "Assignment is temporarily suspended");
 
     private final String displayName;
     private final String description;
@@ -25,10 +29,14 @@ public enum AssignmentStatus {
     }
 
     public boolean isActive() {
-        return this == ASSIGNED || this == TEMPORARY;
+        return this == ACTIVE;
     }
 
-    public boolean isAvailableForNewAssignment() {
-        return this == UNASSIGNED || this == EXPIRED;
+    public boolean canBeModified() {
+        return this == ACTIVE || this == PENDING || this == SUSPENDED;
+    }
+
+    public boolean isTerminated() {
+        return this == COMPLETED || this == CANCELLED || this == EXPIRED;
     }
 }

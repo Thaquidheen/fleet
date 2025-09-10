@@ -10,3 +10,4 @@ public class VehicleValidationException extends VehicleServiceException {
     public VehicleValidationException(String message) {
         super(message);
     }
+}
