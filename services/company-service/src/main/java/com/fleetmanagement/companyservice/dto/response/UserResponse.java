@@ -1,6 +1,7 @@
-// UserResponse.java (for company service)
 package com.fleetmanagement.companyservice.dto.response;
 
+import com.fleetmanagement.companyservice.domain.enums.UserRole;
+import com.fleetmanagement.companyservice.domain.enums.UserStatus;
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -14,24 +15,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-
     private UUID id;
+    private UUID companyId;
     private String username;
     private String email;
     private String firstName;
     private String lastName;
     private String fullName;
-    private String phoneNumber;
-    private String role;
-    private String status;
-    private UUID companyId;
-    private String employeeId;
-    private String department;
-    private Boolean emailVerified;
-    private LocalDateTime lastLogin;
-    private String profileImageUrl;
-    private String timezone;
-    private String language;
+    private UserRole role;
+    private UserStatus status;
+    private boolean active;
+    private boolean emailVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

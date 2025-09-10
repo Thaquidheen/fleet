@@ -1,12 +1,12 @@
-package com.fleetmanagement.apigateway.security;
 
+import com.fleetmanagement.apigateway.security.JwtAuthenticationToken;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,35 +56,5 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
         log.warn("🚫 Unsupported authentication type: {}", authentication.getClass());
         return Mono.empty();
-    }
-}
-
-/**
- * Custom JWT Authentication Token
- */
-class JwtAuthenticationToken extends UsernamePasswordAuthenticationToken {
-
-    private final List<String> roles;
-    private final String companyId;
-    private final String userId;
-
-    public JwtAuthenticationToken(String username, String token, List<String> roles,
-                                  String companyId, String userId) {
-        super(username, token);
-        this.roles = roles;
-        this.companyId = companyId;
-        this.userId = userId;
-    }
-
-    public List<String> getRoles() {
-        return roles;
-    }
-
-    public String getCompanyId() {
-        return companyId;
-    }
-
-    public String getUserId() {
-        return userId;
     }
 }

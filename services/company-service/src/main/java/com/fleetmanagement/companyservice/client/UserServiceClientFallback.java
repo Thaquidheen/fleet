@@ -2,6 +2,10 @@ package com.fleetmanagement.companyservice.client;
 
 import com.fleetmanagement.companyservice.dto.request.BulkUserCreateRequest;
 import com.fleetmanagement.companyservice.dto.request.BulkUserUpdateRequest;
+import com.fleetmanagement.companyservice.dto.response.BulkOperationResponse;
+import com.fleetmanagement.companyservice.dto.response.UserCountResponse;
+import com.fleetmanagement.companyservice.dto.response.UserResponse;
+import com.fleetmanagement.companyservice.client.UserServiceClient;
 import com.fleetmanagement.companyservice.dto.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +56,7 @@ public class UserServiceClientFallback implements UserServiceClient {
     @Override
     public ResponseEntity<BulkOperationResponse> createBulkUsers(BulkUserCreateRequest request) {
         logger.warn("User Service unavailable - using fallback for createBulkUsers");
-        return ResponseEntity.ok(BulkOperationResponse.builder()
+        return ResponseEntity.ok(com.fleetmanagement.companyservice.dto.response.BulkOperationResponse.builder()
                 .successful(0)
                 .failed(request.getUsers() != null ? request.getUsers().size() : 0)
                 .errors(List.of("User service unavailable"))

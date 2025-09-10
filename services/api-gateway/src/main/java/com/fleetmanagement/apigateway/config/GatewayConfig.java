@@ -51,7 +51,7 @@ public class GatewayConfig {
                 "Accept",
                 "Authorization",
                 "X-Requested-With",
-                "X-Company-ID",  // Custom header for multi-tenancy
+                "X-Company-ID",
                 "Cache-Control"
         ));
 

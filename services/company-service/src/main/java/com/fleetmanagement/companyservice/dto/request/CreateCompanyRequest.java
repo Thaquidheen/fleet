@@ -1,5 +1,6 @@
 package com.fleetmanagement.companyservice.dto.request;
 
+import com.fleetmanagement.companyservice.domain.enums.SubscriptionPlan;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -9,6 +10,10 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+/**
+ * FIXED: Added missing subscriptionPlan field that was causing compilation errors
+ * in CompanyService.java where request.getSubscriptionPlan() was being called
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -62,4 +67,7 @@ public class CreateCompanyRequest {
 
     @Size(max = 20, message = "Contact person phone cannot exceed 20 characters")
     private String contactPersonPhone;
+
+    // CRITICAL FIX: This field was missing causing CompanyService compilation errors
+    private SubscriptionPlan subscriptionPlan;
 }

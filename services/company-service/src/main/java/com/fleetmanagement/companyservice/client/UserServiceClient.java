@@ -4,8 +4,10 @@ import com.fleetmanagement.companyservice.dto.request.BulkUserCreateRequest;
 import com.fleetmanagement.companyservice.dto.request.BulkUserUpdateRequest;
 import com.fleetmanagement.companyservice.dto.response.UserResponse;
 import com.fleetmanagement.companyservice.dto.response.BulkOperationResponse;
+import com.fleetmanagement.companyservice.dto.response.UserCountResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
+import com.fleetmanagement.companyservice.client.UserServiceClientFallback;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -117,14 +119,14 @@ public interface UserServiceClient {
      */
     @GetMapping("/api/users/company/{companyId}/statistics")
     @CircuitBreaker(name = "user-service", fallbackMethod = "getUserStatisticsFallback")
-    ResponseEntity<UserStatisticsResponse> getUserStatistics(@PathVariable("companyId") UUID companyId);
+    ResponseEntity<com.fleetmanagement.companyservice.dto.response.UserStatisticsResponse> getUserStatistics(@PathVariable("companyId") UUID companyId);
 
     /**
      * Check if users can be created (subscription validation)
      */
     @PostMapping("/api/users/validate-bulk-creation")
     @CircuitBreaker(name = "user-service", fallbackMethod = "validateBulkCreationFallback")
-    ResponseEntity<BulkValidationResponse> validateBulkUserCreation(
+    ResponseEntity<com.fleetmanagement.companyservice.dto.response.BulkValidationResponse> validateBulkUserCreation(
             @RequestParam("companyId") UUID companyId,
             @RequestParam("userCount") int userCount);
 
@@ -154,7 +156,7 @@ public interface UserServiceClient {
     default ResponseEntity<BulkOperationResponse> createBulkUsersFallback(BulkUserCreateRequest request, Exception ex) {
         return ResponseEntity.ok(BulkOperationResponse.builder()
                 .successful(0)
-                .failed(request.getUsers().size())
+                .failed(request.getUsers() != null ? request.getUsers().size() : 0)
                 .errors(List.of("User service unavailable"))
                 .build());
     }
@@ -162,7 +164,7 @@ public interface UserServiceClient {
     default ResponseEntity<BulkOperationResponse> bulkUpdateUsersFallback(BulkUserUpdateRequest request, Exception ex) {
         return ResponseEntity.ok(BulkOperationResponse.builder()
                 .successful(0)
-                .failed(request.getUsers().size())
+                .failed(request.getUsers() != null ? request.getUsers().size() : 0)
                 .errors(List.of("User service unavailable"))
                 .build());
     }
@@ -170,7 +172,7 @@ public interface UserServiceClient {
     default ResponseEntity<BulkOperationResponse> bulkDeleteUsersFallback(UUID companyId, List<UUID> userIds, Exception ex) {
         return ResponseEntity.ok(BulkOperationResponse.builder()
                 .successful(0)
-                .failed(userIds.size())
+                .failed(userIds != null ? userIds.size() : 0)
                 .errors(List.of("User service unavailable"))
                 .build());
     }
@@ -187,19 +189,18 @@ public interface UserServiceClient {
         return ResponseEntity.badRequest().build();
     }
 
-    default ResponseEntity<UserStatisticsResponse> getUserStatisticsFallback(UUID companyId, Exception ex) {
-        return ResponseEntity.ok(UserStatisticsResponse.builder()
+    default ResponseEntity<com.fleetmanagement.companyservice.dto.response.UserStatisticsResponse> getUserStatisticsFallback(UUID companyId, Exception ex) {
+        return ResponseEntity.ok(com.fleetmanagement.companyservice.dto.response.UserStatisticsResponse.builder()
                 .totalUsers(0)
                 .activeUsers(0)
                 .inactiveUsers(0)
                 .driverCount(0)
                 .adminCount(0)
-                .message("Service unavailable")
                 .build());
     }
 
-    default ResponseEntity<BulkValidationResponse> validateBulkCreationFallback(UUID companyId, int userCount, Exception ex) {
-        return ResponseEntity.ok(BulkValidationResponse.builder()
+    default ResponseEntity<com.fleetmanagement.companyservice.dto.response.BulkValidationResponse> validateBulkCreationFallback(UUID companyId, int userCount, Exception ex) {
+        return ResponseEntity.ok(com.fleetmanagement.companyservice.dto.response.BulkValidationResponse.builder()
                 .canCreate(false)
                 .maxAllowed(0)
                 .currentCount(0)
@@ -208,33 +209,7 @@ public interface UserServiceClient {
                 .build());
     }
 
-    // Response DTOs
-    @lombok.Data
-    @lombok.Builder
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    public static class UserStatisticsResponse {
-        private int totalUsers;
-        private int activeUsers;
-        private int inactiveUsers;
-        private int driverCount;
-        private int adminCount;
-        private int managerCount;
-        private int viewerCount;
-        private String message;
-    }
 
-    @lombok.Data
-    @lombok.Builder
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    public static class BulkValidationResponse {
-        private boolean canCreate;
-        private int maxAllowed;
-        private int currentCount;
-        private int requestedCount;
-        private int availableSlots;
-        private String message;
-        private List<String> errors;
-    }
+
+
 }

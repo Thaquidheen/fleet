@@ -3,6 +3,7 @@ package com.fleetmanagement.companyservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fleetmanagement.companyservice.domain.entity.Company;
+import com.fleetmanagement.companyservice.domain.enums.CompanyStatus;
 import com.fleetmanagement.companyservice.domain.enums.SubscriptionPlan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Event Publishing Service for Company Service
- *
- * Service for publishing company-related domain events to Kafka topics
- * for inter-service communication and audit trails.
+ * FIXED EventPublishingService - Added missing methods and corrected method signatures
  */
 @Service
 public class EventPublishingService {
@@ -93,7 +91,14 @@ public class EventPublishingService {
     }
 
     /**
-     * Publish company updated event
+     * FIXED: Publish company updated event - Added overloaded method for single parameter
+     */
+    public void publishCompanyUpdatedEvent(Company company) {
+        publishCompanyUpdatedEvent(company, null);
+    }
+
+    /**
+     * Publish company updated event with previous state
      */
     public void publishCompanyUpdatedEvent(Company company, Company previousState) {
         if (!eventsEnabled) {
@@ -120,6 +125,77 @@ public class EventPublishingService {
         } catch (Exception e) {
             logger.error("Failed to publish company updated event for company: {}", company.getId(), e);
         }
+    }
+
+    /**
+     * MISSING METHOD: Publish company deleted event
+     */
+    public void publishCompanyDeletedEvent(Company company) {
+        if (!eventsEnabled) {
+            return;
+        }
+
+        try {
+            CompanyDeletedEvent event = CompanyDeletedEvent.builder()
+                    .eventId(UUID.randomUUID())
+                    .companyId(company.getId())
+                    .companyName(company.getName())
+                    .subscriptionPlan(company.getSubscriptionPlan())
+                    .status(company.getStatus())
+                    .deletedAt(LocalDateTime.now())
+                    .deletedBy(company.getUpdatedBy()) // Using updatedBy as deletedBy
+                    .eventTimestamp(LocalDateTime.now())
+                    .build();
+
+            publishEvent(companyDeletedTopic, company.getId().toString(), event);
+            logger.info("Published company deleted event for company: {}", company.getId());
+
+        } catch (Exception e) {
+            logger.error("Failed to publish company deleted event for company: {}", company.getId(), e);
+        }
+    }
+
+    /**
+     * MISSING METHOD: Publish company subscription changed event (overloaded)
+     */
+    public void publishCompanySubscriptionChangedEvent(Company company, SubscriptionPlan oldPlan, SubscriptionPlan newPlan) {
+        publishSubscriptionChangedEvent(company.getId(), oldPlan, newPlan, company.getUpdatedBy());
+    }
+
+    /**
+     * MISSING METHOD: Publish company status changed event
+     */
+    public void publishCompanyStatusChangedEvent(Company company, CompanyStatus oldStatus, CompanyStatus newStatus) {
+        if (!eventsEnabled) {
+            return;
+        }
+
+        try {
+            CompanyStatusChangedEvent event = CompanyStatusChangedEvent.builder()
+                    .eventId(UUID.randomUUID())
+                    .companyId(company.getId())
+                    .companyName(company.getName())
+                    .oldStatus(oldStatus)
+                    .newStatus(newStatus)
+                    .changedAt(LocalDateTime.now())
+                    .changedBy(company.getUpdatedBy())
+                    .eventTimestamp(LocalDateTime.now())
+                    .build();
+
+            publishEvent(companyStatusChangedTopic, company.getId().toString(), event);
+            logger.info("Published company status changed event for company: {} from {} to {}",
+                    company.getId(), oldStatus, newStatus);
+
+        } catch (Exception e) {
+            logger.error("Failed to publish company status changed event for company: {}", company.getId(), e);
+        }
+    }
+
+    /**
+     * MISSING METHOD: Publish user count changed event (overloaded for Company entity)
+     */
+    public void publishCompanyUserCountChangedEvent(Company company, int oldCount, int newCount) {
+        publishUserCountChangedEvent(company.getId(), newCount, oldCount < newCount ? "INCREMENT" : "DECREMENT");
     }
 
     /**
@@ -265,7 +341,7 @@ public class EventPublishingService {
         private UUID companyId;
         private String companyName;
         private SubscriptionPlan subscriptionPlan;
-        private com.fleetmanagement.companyservice.domain.enums.CompanyStatus status;
+        private CompanyStatus status;
         private LocalDateTime createdAt;
         private UUID createdBy;
         private LocalDateTime eventTimestamp;
@@ -281,10 +357,46 @@ public class EventPublishingService {
         private String companyName;
         private SubscriptionPlan subscriptionPlan;
         private SubscriptionPlan previousSubscriptionPlan;
-        private com.fleetmanagement.companyservice.domain.enums.CompanyStatus status;
-        private com.fleetmanagement.companyservice.domain.enums.CompanyStatus previousStatus;
+        private CompanyStatus status;
+        private CompanyStatus previousStatus;
         private LocalDateTime updatedAt;
         private UUID updatedBy;
+        private LocalDateTime eventTimestamp;
+    }
+
+    /**
+     * MISSING EVENT CLASS: CompanyDeletedEvent
+     */
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class CompanyDeletedEvent {
+        private UUID eventId;
+        private UUID companyId;
+        private String companyName;
+        private SubscriptionPlan subscriptionPlan;
+        private CompanyStatus status;
+        private LocalDateTime deletedAt;
+        private UUID deletedBy;
+        private LocalDateTime eventTimestamp;
+    }
+
+    /**
+     * MISSING EVENT CLASS: CompanyStatusChangedEvent
+     */
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class CompanyStatusChangedEvent {
+        private UUID eventId;
+        private UUID companyId;
+        private String companyName;
+        private CompanyStatus oldStatus;
+        private CompanyStatus newStatus;
+        private LocalDateTime changedAt;
+        private UUID changedBy;
         private LocalDateTime eventTimestamp;
     }
 

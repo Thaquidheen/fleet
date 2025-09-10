@@ -21,14 +21,19 @@ public class BulkUserOperationRequest {
     private BulkOperationType operation;
 
     @Valid
-    private BulkUserCreateRequest createRequest;
+    private com.fleetmanagement.companyservice.dto.request.BulkUserCreateRequest createRequest;
 
     @Valid
-    private BulkUserUpdateRequest updateRequest;
+    private com.fleetmanagement.companyservice.dto.request.BulkUserUpdateRequest updateRequest;
 
     private List<UUID> userIds; // For delete operations
 
     private boolean validateOnly; // If true, only validate without executing
     private boolean skipErrors; // If true, continue processing even if some operations fail
     private String reason; // Reason for bulk operation (for audit)
+
+    // Explicit getter to fix compilation error
+    public BulkOperationType getOperation() {
+        return operation;
+    }
 }

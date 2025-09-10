@@ -73,7 +73,7 @@
         <!-- Core Business Services -->
          <module>services/user-service</module>
          <module>services/company-service</module>
-        <!-- <module>services/vehicle-service</module> -->
+         <module>services/vehicle-service</module>
         <!-- <module>services/device-service</module> -->
 
         <!-- Real-time Processing Services -->

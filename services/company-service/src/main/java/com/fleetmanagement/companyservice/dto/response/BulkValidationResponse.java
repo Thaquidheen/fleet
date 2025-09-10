@@ -1,19 +1,17 @@
 package com.fleetmanagement.companyservice.dto.response;
 
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class BulkValidationResponse {
+@lombok.Data
+@lombok.Builder
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+public  class BulkValidationResponse {
     private boolean canCreate;
-    private String message;
-    private int currentUsers;
-    private int maxUsers;
-    private int requestedUsers;
+    private int maxAllowed;
+    private int currentCount;
+    private int requestedCount;
     private int availableSlots;
+    private String message;
+    private List<String> errors;
 }

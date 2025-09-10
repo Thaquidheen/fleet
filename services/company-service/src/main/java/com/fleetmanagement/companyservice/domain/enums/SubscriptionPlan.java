@@ -1,9 +1,13 @@
 package com.fleetmanagement.companyservice.domain.enums;
 
+/**
+ * FIXED SubscriptionPlan enum - Added missing OWNER value
+ */
 public enum SubscriptionPlan {
     BASIC("Basic", "Basic plan with limited features", 5, 10, 0.0),
     PREMIUM("Premium", "Premium plan with advanced features", 50, 100, 99.99),
-    ENTERPRISE("Enterprise", "Enterprise plan with all features", 1000, 10000, 999.99);
+    ENTERPRISE("Enterprise", "Enterprise plan with all features", 1000, 10000, 999.99),
+    OWNER("Owner", "Unlimited plan for fleet owners", -1, -1, 1999.99); // Added missing OWNER
 
     private final String displayName;
     private final String description;
@@ -37,5 +41,24 @@ public enum SubscriptionPlan {
 
     public Double getMonthlyPrice() {
         return monthlyPrice;
+    }
+
+    /**
+     * Check if this plan allows unlimited resources
+     */
+    public boolean isUnlimited() {
+        return this == OWNER;
+    }
+
+    /**
+     * Get plan priority (higher number = higher priority)
+     */
+    public int getPriority() {
+        return switch (this) {
+            case BASIC -> 1;
+            case PREMIUM -> 2;
+            case ENTERPRISE -> 3;
+            case OWNER -> 4;
+        };
     }
 }

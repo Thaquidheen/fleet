@@ -64,10 +64,10 @@ spring:
   # Enhanced Redis Configuration
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:fleet_redis_2024}
-      database: 2  # Use database 2 for company service
+      host: localhost
+      port: 6379
+      password: "fleet_redis_2024"
+      database: 2
       timeout: 3000ms
       lettuce:
         pool:
@@ -250,44 +250,8 @@ feign:
     response:
       enabled: true
 
-# Circuit Breaker Configuration (NEW)
-resilience4j:
-  circuitbreaker:
-    instances:
-      user-service:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
-        eventConsumerBufferSize: 10
-        recordExceptions:
-          - org.springframework.web.client.HttpServerErrorException
-          - java.util.concurrent.TimeoutException
-          - java.io.IOException
-          - feign.RetryableException
-        ignoreExceptions:
-          - com.fleetmanagement.companyservice.exception.BusinessException
-          - org.springframework.web.client.HttpClientErrorException$NotFound
 
-  retry:
-    instances:
-      user-service:
-        maxAttempts: 3
-        waitDuration: 1000ms
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2
-        retryExceptions:
-          - org.springframework.web.client.ResourceAccessException
-          - java.util.concurrent.TimeoutException
-          - feign.RetryableException
 
-  timelimiter:
-    instances:
-      user-service:
-        timeoutDuration: 5s
 
 # Enhanced Logging Configuration
 logging:
@@ -416,13 +380,13 @@ spring:
   config:
     activate:
       on-profile: test
-
-spring:
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+
 
   jpa:
     hibernate:
@@ -437,8 +401,40 @@ app:
     events:
       enabled: false
 
+# Circuit Breaker Configuration (FIXED)
 resilience4j:
   circuitbreaker:
     instances:
       user-service:
-        registerHealthIndicator: false
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - feign.RetryableException
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+
+  retry:
+    instances:
+      user-service:
+        maxAttempts: 3
+        waitDuration: 1000ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - java.util.concurrent.TimeoutException
+          - feign.RetryableException
+
+  timelimiter:
+    instances:
+      user-service:
+        timeoutDuration: 5s

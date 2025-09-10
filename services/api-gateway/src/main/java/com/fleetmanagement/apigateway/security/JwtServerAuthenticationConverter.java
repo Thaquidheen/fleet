@@ -28,25 +28,3 @@ public class JwtServerAuthenticationConverter implements ServerAuthenticationCon
                 });
     }
 }
-
-/**
- * JWT Authentication Entry Point
- */
-class JwtAuthenticationEntryPoint {
-    public static Mono<Void> commence(ServerWebExchange exchange, Exception ex) {
-        return Mono.fromRunnable(() -> {
-            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-        });
-    }
-}
-
-/**
- * JWT Access Denied Handler
- */
-class JwtAccessDeniedHandler {
-    public static Mono<Void> handle(ServerWebExchange exchange, Exception denied) {
-        return Mono.fromRunnable(() -> {
-            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.FORBIDDEN);
-        });
-    }
-}

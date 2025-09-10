@@ -13,6 +13,11 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+/**
+ * FIXED JwtTokenService - Compatible with JJWT 0.11.x
+ *
+ * Changed from verifyWith() to setSigningKey() method which is supported in 0.11.x
+ */
 @Service
 public class JwtTokenService {
 
@@ -31,11 +36,11 @@ public class JwtTokenService {
 
     public boolean validateAccessToken(String token) {
         try {
-            // Updated to use the new parser method for JJWT 0.12.x
-            Jwts.parser()
-                    .verifyWith(getSigningKey())
+            // Fixed: Use setSigningKey() instead of verifyWith() for JJWT 0.11.x compatibility
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             logger.debug("JWT validation failed: {}", e.getMessage());
@@ -72,10 +77,53 @@ public class JwtTokenService {
     }
 
     private Claims getClaimsFromToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
+        // Fixed: Use setSigningKey() instead of verifyWith() for JJWT 0.11.x compatibility
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // Additional utility methods for token validation
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            return claims.getExpiration().before(new java.util.Date());
+        } catch (Exception e) {
+            logger.debug("Error checking token expiration: {}", e.getMessage());
+            return true; // Consider expired if we can't parse
+        }
+    }
+
+    public boolean isValidTokenFormat(String token) {
+        if (token == null || token.trim().isEmpty()) {
+            return false;
+        }
+
+        // JWT should have 3 parts separated by dots
+        String[] parts = token.split("\\.");
+        return parts.length == 3;
+    }
+
+    public String getIssuerFromToken(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            return claims.getIssuer();
+        } catch (Exception e) {
+            logger.debug("Error getting issuer from token: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public java.util.Date getExpirationFromToken(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            return claims.getExpiration();
+        } catch (Exception e) {
+            logger.debug("Error getting expiration from token: {}", e.getMessage());
+            return null;
+        }
     }
 }
