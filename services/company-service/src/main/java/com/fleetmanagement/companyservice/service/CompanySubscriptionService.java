@@ -46,9 +46,9 @@ public class CompanySubscriptionService {
         logger.debug("Getting max drivers for plan: {}", plan);
 
         return switch (plan) {
-            case BASIC -> 3;
-            case PREMIUM -> 25;
-            case ENTERPRISE -> 500;
+            case BASIC -> 5;
+            case PREMIUM -> 50;
+            case ENTERPRISE -> 1000;
             case OWNER -> Integer.MAX_VALUE; // Unlimited
         };
     }

@@ -83,6 +83,9 @@ server:
     max-threads: 200
     min-spare-threads: 10
 
+# Service URLs for Feign clients
+
+
 # Eureka Configuration
 eureka:
   client:
@@ -142,6 +145,22 @@ management:
 
 # Application Specific Configuration
 app:
+  services:
+    user-service:
+      url: http://localhost:8082
+    company-service:
+      url: http://localhost:8083
+
+  # Cache configuration
+  cache:
+    vehicles:
+      ttl: 300 # 5 minutes
+    assignments:
+      ttl: 180 # 3 minutes
+    driver-assignments:
+      ttl: 120 # 2 minutes
+    vehicle-assignments:
+      ttl: 120 # 2 minutes
   vehicle:
     default-page-size: 20
     max-page-size: 100
@@ -193,6 +212,19 @@ springdoc:
     description: Fleet Management Vehicle Operations
     version: 1.0.0
 
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus
+    endpoint:
+      health:
+        show-details: always
+    metrics:
+      export:
+        prometheus:
+          enabled: true
 ---
 # Development Profile
 spring:

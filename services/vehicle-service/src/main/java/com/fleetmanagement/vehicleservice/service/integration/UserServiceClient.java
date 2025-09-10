@@ -184,15 +184,3 @@ public interface UserServiceClient {
     }
 }
 
-/**
- * Check if driver is available for assignment
- */
-@GetMapping("/api/users/{driverId}/availability")
-DriverAvailabilityResponse checkDriverAvailability(@PathVariable("driverId") UUID driverId,
-                                                   @RequestParam("companyId") UUID companyId);
-
-/**
- * Get all drivers for a company
- */
-@GetMapping("/api/users/drivers")
-List<DriverResponse> getDriversByCompany(@RequestParam("companyId") UUID

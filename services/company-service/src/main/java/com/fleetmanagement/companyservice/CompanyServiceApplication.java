@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import org.springframework.kafka.annotation.EnableKafka;
+
 /**
  * Company Service Application
  *
@@ -28,10 +30,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients
 @EnableAsync
 @EnableScheduling
 @EnableTransactionManagement
+
+@EnableFeignClients  // For Feign clients
+
+@EnableKafka        // For Kafka integration
 public class CompanyServiceApplication {
 
     public static void main(String[] args) {

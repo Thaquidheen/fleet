@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @Tag(name = "User Management", description = "User CRUD operations and management")
 public class UserController {
 

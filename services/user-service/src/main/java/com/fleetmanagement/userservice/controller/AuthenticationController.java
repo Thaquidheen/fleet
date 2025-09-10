@@ -75,31 +75,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/me")
-    @Operation(summary = "Get current user profile", description = "Get current authenticated user information")
-    @ApiResponse(responseCode = "200", description = "Current user information")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        logger.info("Get current user profile request");
 
-        try {
-            String token = jwtTokenService.extractTokenFromHeader(authHeader);
-            if (token == null) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            // Get user ID from JWT token
-            UUID userId = jwtTokenService.getUserIdFromToken(token);
-
-            // Get user details
-            UserResponse userResponse = userService.getUserById(userId);
-
-            return ResponseEntity.ok(userResponse);
-        } catch (Exception e) {
-            logger.error("Error getting current user: {}", e.getMessage());
-            return ResponseEntity.status(500).build();
-        }
-    }
 
     @PutMapping("/me")
     @Operation(summary = "Update current user profile", description = "Update current authenticated user information")
