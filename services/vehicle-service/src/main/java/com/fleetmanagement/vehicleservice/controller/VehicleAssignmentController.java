@@ -1,13 +1,12 @@
 package com.fleetmanagement.vehicleservice.controller;
 
 import com.fleetmanagement.vehicleservice.dto.request.AssignDriverRequest;
-import com.fleetmanagement.vehicleservice.dto.request.UpdateAssignmentRequest;
-import com.fleetmanagement.vehicleservice.dto.response.ApiResponse;
 import com.fleetmanagement.vehicleservice.dto.response.VehicleAssignmentResponse;
 import com.fleetmanagement.vehicleservice.service.VehicleAssignmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-
+import com.fleetmanagement.vehicleservice.dto.response.VehicleApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -47,7 +46,7 @@ public class VehicleAssignmentController {
     @ApiResponse(responseCode = "400", description = "Invalid assignment data")
     @ApiResponse(responseCode = "409", description = "Assignment conflict or driver not available")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> assignDriverToVehicle(
+    public ResponseEntity<VehicleApiResponse<VehicleAssignmentResponse>> assignDriverToVehicle(
             @Valid @RequestBody AssignDriverRequest request,
             Authentication authentication) {
 
@@ -58,7 +57,7 @@ public class VehicleAssignmentController {
 
         VehicleAssignmentResponse response = assignmentService.assignDriverToVehicle(request, companyId, assignedBy);
 
-        ApiResponse<VehicleAssignmentResponse> apiResponse = ApiResponse.<VehicleAssignmentResponse>builder()
+        VehicleApiResponse<VehicleAssignmentResponse> apiResponse = VehicleApiResponse.<VehicleAssignmentResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Driver assigned to vehicle successfully")
@@ -74,7 +73,7 @@ public class VehicleAssignmentController {
     @Operation(summary = "Get driver assignments", description = "Retrieve all assignments for a specific driver")
     @ApiResponse(responseCode = "200", description = "Driver assignments retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or @vehicleAssignmentService.canAccessDriverAssignments(authentication.name, #driverId)")
-    public ResponseEntity<ApiResponse<List<VehicleAssignmentResponse>>> getDriverAssignments(
+    public ResponseEntity<VehicleApiResponse<List<VehicleAssignmentResponse>>> getDriverAssignments(
             @PathVariable @Parameter(description = "Driver ID") UUID driverId,
             Authentication authentication) {
 
@@ -84,7 +83,7 @@ public class VehicleAssignmentController {
 
         List<VehicleAssignmentResponse> assignments = assignmentService.getDriverAssignments(driverId, companyId);
 
-        ApiResponse<List<VehicleAssignmentResponse>> response = ApiResponse.<List<VehicleAssignmentResponse>>builder()
+        VehicleApiResponse<List<VehicleAssignmentResponse>> response = VehicleApiResponse.<List<VehicleAssignmentResponse>>builder()
                 .success(true)
                 .data(assignments)
                 .message("Driver assignments retrieved successfully")
@@ -100,7 +99,7 @@ public class VehicleAssignmentController {
     @Operation(summary = "Get vehicle assignments", description = "Retrieve all assignments for a specific vehicle")
     @ApiResponse(responseCode = "200", description = "Vehicle assignments retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<List<VehicleAssignmentResponse>>> getVehicleAssignments(
+    public ResponseEntity<VehicleApiResponse<List<VehicleAssignmentResponse>>> getVehicleAssignments(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
             Authentication authentication) {
 
@@ -110,7 +109,7 @@ public class VehicleAssignmentController {
 
         List<VehicleAssignmentResponse> assignments = assignmentService.getVehicleAssignments(vehicleId, companyId);
 
-        ApiResponse<List<VehicleAssignmentResponse>> response = ApiResponse.<List<VehicleAssignmentResponse>>builder()
+        VehicleApiResponse<List<VehicleAssignmentResponse>> response = VehicleApiResponse.<List<VehicleAssignmentResponse>>builder()
                 .success(true)
                 .data(assignments)
                 .message("Vehicle assignments retrieved successfully")
@@ -126,7 +125,7 @@ public class VehicleAssignmentController {
     @Operation(summary = "Get active assignments", description = "Retrieve all currently active assignments for the company")
     @ApiResponse(responseCode = "200", description = "Active assignments retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<List<VehicleAssignmentResponse>>> getActiveAssignments(
+    public ResponseEntity<VehicleApiResponse<List<VehicleAssignmentResponse>>> getActiveAssignments(
             Authentication authentication) {
 
         logger.debug("Get active assignments request");
@@ -135,7 +134,7 @@ public class VehicleAssignmentController {
 
         List<VehicleAssignmentResponse> assignments = assignmentService.getActiveAssignments(companyId);
 
-        ApiResponse<List<VehicleAssignmentResponse>> response = ApiResponse.<List<VehicleAssignmentResponse>>builder()
+        VehicleApiResponse<List<VehicleAssignmentResponse>> response = VehicleApiResponse.<List<VehicleAssignmentResponse>>builder()
                 .success(true)
                 .data(assignments)
                 .message("Active assignments retrieved successfully")
@@ -152,7 +151,7 @@ public class VehicleAssignmentController {
     @ApiResponse(responseCode = "200", description = "Assignment terminated successfully")
     @ApiResponse(responseCode = "404", description = "Assignment not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> terminateAssignment(
+    public ResponseEntity<VehicleApiResponse<VehicleAssignmentResponse>> terminateAssignment(
             @PathVariable @Parameter(description = "Assignment ID") UUID assignmentId,
             Authentication authentication) {
 
@@ -163,7 +162,7 @@ public class VehicleAssignmentController {
 
         VehicleAssignmentResponse response = assignmentService.terminateAssignment(assignmentId, companyId, terminatedBy);
 
-        ApiResponse<VehicleAssignmentResponse> apiResponse = ApiResponse.<VehicleAssignmentResponse>builder()
+        VehicleApiResponse<VehicleAssignmentResponse> apiResponse = VehicleApiResponse.<VehicleAssignmentResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Assignment terminated successfully")
@@ -180,7 +179,7 @@ public class VehicleAssignmentController {
     @ApiResponse(responseCode = "200", description = "Assignment checked in successfully")
     @ApiResponse(responseCode = "404", description = "Assignment not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or @vehicleAssignmentService.canCheckInAssignment(authentication.name, #assignmentId)")
-    public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> checkInAssignment(
+    public ResponseEntity<VehicleApiResponse<VehicleAssignmentResponse>> checkInAssignment(
             @PathVariable @Parameter(description = "Assignment ID") UUID assignmentId,
             Authentication authentication) {
 
@@ -191,7 +190,7 @@ public class VehicleAssignmentController {
 
         VehicleAssignmentResponse response = assignmentService.checkInAssignment(assignmentId, companyId, checkedInBy);
 
-        ApiResponse<VehicleAssignmentResponse> apiResponse = ApiResponse.<VehicleAssignmentResponse>builder()
+        VehicleApiResponse<VehicleAssignmentResponse> apiResponse = VehicleApiResponse.<VehicleAssignmentResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Assignment checked in successfully")
@@ -208,7 +207,7 @@ public class VehicleAssignmentController {
     @ApiResponse(responseCode = "200", description = "Assignment checked out successfully")
     @ApiResponse(responseCode = "404", description = "Assignment not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or @vehicleAssignmentService.canCheckOutAssignment(authentication.name, #assignmentId)")
-    public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> checkOutAssignment(
+    public ResponseEntity<VehicleApiResponse<VehicleAssignmentResponse>> checkOutAssignment(
             @PathVariable @Parameter(description = "Assignment ID") UUID assignmentId,
             Authentication authentication) {
 
@@ -219,7 +218,7 @@ public class VehicleAssignmentController {
 
         VehicleAssignmentResponse response = assignmentService.checkOutAssignment(assignmentId, companyId, checkedOutBy);
 
-        ApiResponse<VehicleAssignmentResponse> apiResponse = ApiResponse.<VehicleAssignmentResponse>builder()
+        VehicleApiResponse<VehicleAssignmentResponse> apiResponse = VehicleApiResponse.<VehicleAssignmentResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Assignment checked out successfully")

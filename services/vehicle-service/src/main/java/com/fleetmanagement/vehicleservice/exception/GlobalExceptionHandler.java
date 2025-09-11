@@ -1,6 +1,6 @@
 package com.fleetmanagement.vehicleservice.exception;
 
-import com.fleetmanagement.vehicleservice.dto.response.ApiResponse;
+import com.fleetmanagement.vehicleservice.dto.response.VehicleApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,10 +19,10 @@ public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(VehicleNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleVehicleNotFound(VehicleNotFoundException ex) {
+    public ResponseEntity<VehicleApiResponse<Void>> handleVehicleNotFound(VehicleNotFoundException ex) {
         logger.warn("Vehicle not found: {}", ex.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response = VehicleApiResponse.<Void>builder()
                 .success(false)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -32,10 +32,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(VehicleLimitExceededException.class)
-    public ResponseEntity<ApiResponse<Void>> handleVehicleLimitExceeded(VehicleLimitExceededException ex) {
+    public ResponseEntity<VehicleApiResponse<Void>> handleVehicleLimitExceeded(VehicleLimitExceededException ex) {
         logger.warn("Vehicle limit exceeded: {}", ex.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response = VehicleApiResponse.<Void>builder()
                 .success(false)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -45,10 +45,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DriverNotAvailableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDriverNotAvailable(DriverNotAvailableException ex) {
+    public ResponseEntity<VehicleApiResponse<Void>> handleDriverNotAvailable(DriverNotAvailableException ex) {
         logger.warn("Driver not available: {}", ex.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response = VehicleApiResponse.<Void>builder()
                 .success(false)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -58,10 +58,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(VehicleAssignmentConflictException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAssignmentConflict(VehicleAssignmentConflictException ex) {
+    public ResponseEntity<VehicleApiResponse<Void>> handleAssignmentConflict(VehicleAssignmentConflictException ex) {
         logger.warn("Assignment conflict: {}", ex.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response = VehicleApiResponse.<Void>builder()
                 .success(false)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(
+    public ResponseEntity<VehicleApiResponse<Map<String, String>>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
         logger.warn("Validation error: {}", ex.getMessage());
 
@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
+        VehicleApiResponse<Map<String, String>> response = VehicleApiResponse.<Map<String, String>>builder()
                 .success(false)
                 .data(errors)
                 .message("Validation failed")
@@ -93,10 +93,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<VehicleApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
         logger.warn("Illegal argument: {}", ex.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response =VehicleApiResponse.<Void>builder()
                 .success(false)
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -106,10 +106,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+    public ResponseEntity<VehicleApiResponse<Void>> handleGenericException(Exception ex) {
         logger.error("Unexpected error occurred", ex);
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response = VehicleApiResponse.<Void>builder()
                 .success(false)
                 .message("An unexpected error occurred")
                 .timestamp(LocalDateTime.now())

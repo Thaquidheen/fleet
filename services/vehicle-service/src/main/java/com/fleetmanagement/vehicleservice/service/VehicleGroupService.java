@@ -213,8 +213,8 @@ public class VehicleGroupService {
 
         return hierarchyData.stream()
                 .map(row -> VehicleGroupHierarchyResponse.builder()
-                        .groupId((UUID) row[0])
-                        .name((String) row[1])
+                        .rootGroupId((UUID) row[0])
+                        .rootGroupName((String) row[1])
                         .parentGroupId((UUID) row[2])
                         .level((Integer) row[3])
                         .build())

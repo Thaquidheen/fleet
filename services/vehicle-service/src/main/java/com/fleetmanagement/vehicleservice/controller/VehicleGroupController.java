@@ -1,21 +1,17 @@
 package com.fleetmanagement.vehicleservice.controller;
 
-import com.fleetmanagement.vehicleservice.domain.enums.GroupType;
 import com.fleetmanagement.vehicleservice.dto.request.*;
 import com.fleetmanagement.vehicleservice.dto.response.*;
 import com.fleetmanagement.vehicleservice.service.VehicleGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import com.fleetmanagement.vehicleservice.dto.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import com.fleetmanagement.vehicleservice.dto.response.VehicleApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,7 +55,7 @@ public class VehicleGroupController {
     @ApiResponse(responseCode = "400", description = "Invalid group data")
     @ApiResponse(responseCode = "409", description = "Group name already exists")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleGroupResponse>> createVehicleGroup(
+    public ResponseEntity<VehicleApiResponse<VehicleGroupResponse>> createVehicleGroup(
             @Valid @RequestBody CreateVehicleGroupRequest request,
             Authentication authentication) {
 
@@ -70,7 +66,7 @@ public class VehicleGroupController {
 
         VehicleGroupResponse group = vehicleGroupService.createVehicleGroup(request, companyId, createdBy);
 
-        ApiResponse<VehicleGroupResponse> response = ApiResponse.success(group, "Vehicle group created successfully");
+        VehicleApiResponse<VehicleGroupResponse> response = VehicleApiResponse.success(group, "Vehicle group created successfully");
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -83,7 +79,7 @@ public class VehicleGroupController {
     @ApiResponse(responseCode = "200", description = "Vehicle group retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Vehicle group not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<VehicleGroupResponse>> getVehicleGroup(
+    public ResponseEntity<VehicleApiResponse<VehicleGroupResponse>> getVehicleGroup(
             @PathVariable @Parameter(description = "Vehicle group ID") UUID groupId,
             Authentication authentication) {
 
@@ -93,7 +89,7 @@ public class VehicleGroupController {
 
         VehicleGroupResponse group = vehicleGroupService.getVehicleGroupById(groupId, companyId);
 
-        ApiResponse<VehicleGroupResponse> response = ApiResponse.success(group);
+        VehicleApiResponse<VehicleGroupResponse> response = VehicleApiResponse.success(group);
 
         return ResponseEntity.ok(response);
     }
@@ -107,7 +103,7 @@ public class VehicleGroupController {
     @ApiResponse(responseCode = "404", description = "Vehicle group not found")
     @ApiResponse(responseCode = "400", description = "Invalid update data")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleGroupResponse>> updateVehicleGroup(
+    public ResponseEntity<VehicleApiResponse<VehicleGroupResponse>> updateVehicleGroup(
             @PathVariable @Parameter(description = "Vehicle group ID") UUID groupId,
             @Valid @RequestBody UpdateVehicleGroupRequest request,
             Authentication authentication) {
@@ -119,7 +115,7 @@ public class VehicleGroupController {
 
         VehicleGroupResponse group = vehicleGroupService.updateVehicleGroup(groupId, request, companyId, updatedBy);
 
-        ApiResponse<VehicleGroupResponse> response = ApiResponse.success(group, "Vehicle group updated successfully");
+        VehicleApiResponse<VehicleGroupResponse> response = VehicleApiResponse.success(group, "Vehicle group updated successfully");
 
         return ResponseEntity.ok(response);
     }
@@ -133,7 +129,7 @@ public class VehicleGroupController {
     @ApiResponse(responseCode = "404", description = "Vehicle group not found")
     @ApiResponse(responseCode = "409", description = "Cannot delete group with vehicles or child groups")
     @PreAuthorize("hasRole('COMPANY_ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> deleteVehicleGroup(
+    public ResponseEntity<VehicleApiResponse<Void>> deleteVehicleGroup(
             @PathVariable @Parameter(description = "Vehicle group ID") UUID groupId,
             Authentication authentication) {
 
@@ -144,7 +140,7 @@ public class VehicleGroupController {
 
         vehicleGroupService.deleteVehicleGroup(groupId, companyId, deletedBy);
 
-        ApiResponse<Void> response = ApiResponse.success(null, "Vehicle group deleted successfully");
+        VehicleApiResponse<Void> response = VehicleApiResponse.success(null, "Vehicle group deleted successfully");
 
         return ResponseEntity.ok(response);
     }
@@ -156,7 +152,7 @@ public class VehicleGroupController {
     @Operation(summary = "Get vehicle groups", description = "Retrieve all vehicle groups for the company")
     @ApiResponse(responseCode = "200", description = "Vehicle groups retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<List<VehicleGroupResponse>>> getVehicleGroups(
+    public ResponseEntity<VehicleApiResponse<List<VehicleGroupResponse>>> getVehicleGroups(
             Authentication authentication) {
 
         logger.debug("Get vehicle groups request");
@@ -165,7 +161,7 @@ public class VehicleGroupController {
 
         List<VehicleGroupResponse> groups = vehicleGroupService.getVehicleGroupsByCompany(companyId);
 
-        ApiResponse<List<VehicleGroupResponse>> response = ApiResponse.success(groups);
+        VehicleApiResponse<List<VehicleGroupResponse>> response = VehicleApiResponse.success(groups);
 
         return ResponseEntity.ok(response);
     }
@@ -177,7 +173,7 @@ public class VehicleGroupController {
     @Operation(summary = "Get root vehicle groups", description = "Retrieve top-level vehicle groups (no parent)")
     @ApiResponse(responseCode = "200", description = "Root vehicle groups retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<List<VehicleGroupResponse>>> getRootVehicleGroups(
+    public ResponseEntity<VehicleApiResponse<List<VehicleGroupResponse>>> getRootVehicleGroups(
             Authentication authentication) {
 
         logger.debug("Get root vehicle groups request");
@@ -186,7 +182,7 @@ public class VehicleGroupController {
 
         List<VehicleGroupResponse> groups = vehicleGroupService.getRootVehicleGroups(companyId);
 
-        ApiResponse<List<VehicleGroupResponse>> response = ApiResponse.success(groups);
+        VehicleApiResponse<List<VehicleGroupResponse>> response = VehicleApiResponse.success(groups);
 
         return ResponseEntity.ok(response);
     }
@@ -199,7 +195,7 @@ public class VehicleGroupController {
     @ApiResponse(responseCode = "200", description = "Child groups retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Parent group not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<List<VehicleGroupResponse>>> getChildGroups(
+    public ResponseEntity<VehicleApiResponse<List<VehicleGroupResponse>>> getChildGroups(
             @PathVariable @Parameter(description = "Parent group ID") UUID parentGroupId,
             Authentication authentication) {
 
@@ -209,7 +205,7 @@ public class VehicleGroupController {
 
         List<VehicleGroupResponse> groups = vehicleGroupService.getChildGroups(parentGroupId, companyId);
 
-        ApiResponse<List<VehicleGroupResponse>> response = ApiResponse.success(groups);
+        VehicleApiResponse<List<VehicleGroupResponse>> response = VehicleApiResponse.success(groups);
 
         return ResponseEntity.ok(response);
     }

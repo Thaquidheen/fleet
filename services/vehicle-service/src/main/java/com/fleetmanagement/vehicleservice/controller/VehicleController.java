@@ -4,9 +4,10 @@ import com.fleetmanagement.vehicleservice.client.UserServiceClient;
 import com.fleetmanagement.vehicleservice.client.UserServiceClient.DriverResponse;
 import com.fleetmanagement.vehicleservice.dto.request.CreateVehicleRequest;
 import com.fleetmanagement.vehicleservice.dto.request.UpdateVehicleRequest;
-import com.fleetmanagement.vehicleservice.dto.response.ApiResponse;
 import com.fleetmanagement.vehicleservice.dto.response.VehicleResponse;
 import com.fleetmanagement.vehicleservice.dto.response.VehicleStatisticsResponse;
+import com.fleetmanagement.vehicleservice.dto.response.VehicleApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.fleetmanagement.vehicleservice.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,7 +57,7 @@ public class VehicleController {
     @ApiResponse(responseCode = "400", description = "Invalid vehicle data or company limit exceeded")
     @ApiResponse(responseCode = "409", description = "Vehicle already exists (VIN or license plate conflict)")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleResponse>> createVehicle(
+    public ResponseEntity<VehicleApiResponse<VehicleResponse>> createVehicle(
             @Valid @RequestBody CreateVehicleRequest request,
             Authentication authentication) {
 
@@ -67,7 +68,7 @@ public class VehicleController {
 
         VehicleResponse response = vehicleService.createVehicle(request, companyId, createdBy);
 
-        ApiResponse<VehicleResponse> apiResponse = ApiResponse.<VehicleResponse>builder()
+        VehicleApiResponse<VehicleResponse> apiResponse = VehicleApiResponse.<VehicleResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Vehicle created successfully")
@@ -83,7 +84,7 @@ public class VehicleController {
     @Operation(summary = "Get vehicles", description = "Retrieve all vehicles for the company with pagination")
     @ApiResponse(responseCode = "200", description = "Vehicles retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<Page<VehicleResponse>>> getVehicles(
+    public ResponseEntity<VehicleApiResponse<Page<VehicleResponse>>> getVehicles(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "Sort field") @RequestParam(defaultValue = "name") String sortBy,
@@ -99,7 +100,7 @@ public class VehicleController {
 
         Page<VehicleResponse> vehicles = vehicleService.getVehiclesByCompany(companyId, pageable);
 
-        ApiResponse<Page<VehicleResponse>> response = ApiResponse.<Page<VehicleResponse>>builder()
+        VehicleApiResponse<Page<VehicleResponse>> response = VehicleApiResponse.<Page<VehicleResponse>>builder()
                 .success(true)
                 .data(vehicles)
                 .message("Vehicles retrieved successfully")
@@ -116,7 +117,7 @@ public class VehicleController {
     @ApiResponse(responseCode = "200", description = "Vehicle found")
     @ApiResponse(responseCode = "404", description = "Vehicle not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<VehicleResponse>> getVehicleById(
+    public ResponseEntity<VehicleApiResponse<VehicleResponse>> getVehicleById(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
             Authentication authentication) {
 
@@ -126,7 +127,7 @@ public class VehicleController {
 
         VehicleResponse response = vehicleService.getVehicleById(vehicleId, companyId);
 
-        ApiResponse<VehicleResponse> apiResponse = ApiResponse.<VehicleResponse>builder()
+        VehicleApiResponse<VehicleResponse> apiResponse = VehicleApiResponse.<VehicleResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Vehicle retrieved successfully")
@@ -144,7 +145,7 @@ public class VehicleController {
     @ApiResponse(responseCode = "404", description = "Vehicle not found")
     @ApiResponse(responseCode = "400", description = "Invalid vehicle data")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleResponse>> updateVehicle(
+    public ResponseEntity<VehicleApiResponse<VehicleResponse>> updateVehicle(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
             @Valid @RequestBody UpdateVehicleRequest request,
             Authentication authentication) {
@@ -156,7 +157,7 @@ public class VehicleController {
 
         VehicleResponse response = vehicleService.updateVehicle(vehicleId, request, companyId, updatedBy);
 
-        ApiResponse<VehicleResponse> apiResponse = ApiResponse.<VehicleResponse>builder()
+        VehicleApiResponse<VehicleResponse> apiResponse = VehicleApiResponse.<VehicleResponse>builder()
                 .success(true)
                 .data(response)
                 .message("Vehicle updated successfully")
@@ -173,7 +174,7 @@ public class VehicleController {
     @ApiResponse(responseCode = "204", description = "Vehicle deleted successfully")
     @ApiResponse(responseCode = "404", description = "Vehicle not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<Void>> deleteVehicle(
+    public ResponseEntity<VehicleApiResponse<Void>> deleteVehicle(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
             Authentication authentication) {
 
@@ -184,7 +185,7 @@ public class VehicleController {
 
         vehicleService.deleteVehicle(vehicleId, companyId, deletedBy);
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        VehicleApiResponse<Void> response = VehicleApiResponse.<Void>builder()
                 .success(true)
                 .message("Vehicle deleted successfully")
                 .build();
@@ -199,7 +200,7 @@ public class VehicleController {
     @Operation(summary = "Get available drivers", description = "Get list of available drivers for vehicle assignment")
     @ApiResponse(responseCode = "200", description = "Available drivers retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<List<DriverResponse>>> getAvailableDrivers(
+    public ResponseEntity<VehicleApiResponse<List<DriverResponse>>> getAvailableDrivers(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
             Authentication authentication) {
 
@@ -210,7 +211,7 @@ public class VehicleController {
         // Get available drivers from User Service
         List<DriverResponse> drivers = userServiceClient.getAvailableDrivers(companyId).getBody();
 
-        ApiResponse<List<DriverResponse>> response = ApiResponse.<List<DriverResponse>>builder()
+        VehicleApiResponse<List<DriverResponse>> response = VehicleApiResponse.<List<DriverResponse>>builder()
                 .success(true)
                 .data(drivers)
                 .message("Available drivers retrieved successfully")
@@ -226,7 +227,7 @@ public class VehicleController {
     @Operation(summary = "Get vehicle statistics", description = "Get comprehensive vehicle statistics for the company")
     @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<VehicleStatisticsResponse>> getVehicleStatistics(
+    public ResponseEntity<VehicleApiResponse<VehicleStatisticsResponse>> getVehicleStatistics(
             Authentication authentication) {
 
         logger.debug("Get vehicle statistics request");
@@ -235,7 +236,7 @@ public class VehicleController {
 
         VehicleStatisticsResponse statistics = vehicleService.getVehicleStatistics(companyId);
 
-        ApiResponse<VehicleStatisticsResponse> response = ApiResponse.<VehicleStatisticsResponse>builder()
+        VehicleApiResponse<VehicleStatisticsResponse> response = VehicleApiResponse.<VehicleStatisticsResponse>builder()
                 .success(true)
                 .data(statistics)
                 .message("Vehicle statistics retrieved successfully")
@@ -251,7 +252,7 @@ public class VehicleController {
     @Operation(summary = "Search vehicles", description = "Search vehicles with various filters")
     @ApiResponse(responseCode = "200", description = "Search results retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
-    public ResponseEntity<ApiResponse<Page<VehicleResponse>>> searchVehicles(
+    public ResponseEntity<VehicleApiResponse<Page<VehicleResponse>>> searchVehicles(
             @Parameter(description = "Vehicle name or license plate") @RequestParam(required = false) String query,
             @Parameter(description = "Vehicle type") @RequestParam(required = false) String vehicleType,
             @Parameter(description = "Vehicle status") @RequestParam(required = false) String status,
@@ -266,7 +267,7 @@ public class VehicleController {
         Pageable pageable = PageRequest.of(page, size);
         Page<VehicleResponse> results = vehicleService.searchVehicles(companyId, query, vehicleType, status, pageable);
 
-        ApiResponse<Page<VehicleResponse>> response = ApiResponse.<Page<VehicleResponse>>builder()
+        VehicleApiResponse<Page<VehicleResponse>> response = VehicleApiResponse.<Page<VehicleResponse>>builder()
                 .success(true)
                 .data(results)
                 .message("Search results retrieved successfully")
@@ -282,7 +283,7 @@ public class VehicleController {
     @Operation(summary = "Get company drivers", description = "Get all drivers in the company for vehicle assignment")
     @ApiResponse(responseCode = "200", description = "Company drivers retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<List<DriverResponse>>> getCompanyDrivers(
+    public ResponseEntity<VehicleApiResponse<List<DriverResponse>>> getCompanyDrivers(
             Authentication authentication) {
 
         logger.debug("Get company drivers request");
@@ -291,7 +292,7 @@ public class VehicleController {
 
         List<DriverResponse> drivers = userServiceClient.getCompanyDrivers(companyId).getBody();
 
-        ApiResponse<List<DriverResponse>> response = ApiResponse.<List<DriverResponse>>builder()
+        VehicleApiResponse<List<DriverResponse>> response = VehicleApiResponse.<List<DriverResponse>>builder()
                 .success(true)
                 .data(drivers)
                 .message("Company drivers retrieved successfully")
@@ -307,7 +308,7 @@ public class VehicleController {
     @Operation(summary = "Validate vehicle creation", description = "Check if company can add more vehicles")
     @ApiResponse(responseCode = "200", description = "Validation completed successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
-    public ResponseEntity<ApiResponse<VehicleCreationValidationResponse>> validateVehicleCreation(
+    public ResponseEntity<VehicleApiResponse<VehicleCreationValidationResponse>> validateVehicleCreation(
             Authentication authentication) {
 
         logger.debug("Validate vehicle creation request");
@@ -316,7 +317,7 @@ public class VehicleController {
 
         VehicleCreationValidationResponse validation = vehicleService.validateVehicleCreation(companyId);
 
-        ApiResponse<VehicleCreationValidationResponse> response = ApiResponse.<VehicleCreationValidationResponse>builder()
+        VehicleApiResponse<VehicleCreationValidationResponse> response = VehicleApiResponse.<VehicleCreationValidationResponse>builder()
                 .success(true)
                 .data(validation)
                 .message("Validation completed successfully")
