@@ -43,9 +43,9 @@ public class VehicleAssignmentController {
      */
     @PostMapping
     @Operation(summary = "Assign driver to vehicle", description = "Create driver-vehicle assignment with real-time availability checking")
-    @SwaggerApiResponse(responseCode = "201", description = "Assignment created successfully")
-    @SwaggerApiResponse(responseCode = "400", description = "Invalid assignment data")
-    @SwaggerApiResponse(responseCode = "409", description = "Assignment conflict or driver not available")
+    @ApiResponse(responseCode = "201", description = "Assignment created successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid assignment data")
+    @ApiResponse(responseCode = "409", description = "Assignment conflict or driver not available")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> assignDriverToVehicle(
             @Valid @RequestBody AssignDriverRequest request,
@@ -72,7 +72,7 @@ public class VehicleAssignmentController {
      */
     @GetMapping("/driver/{driverId}")
     @Operation(summary = "Get driver assignments", description = "Retrieve all assignments for a specific driver")
-    @SwaggerApiResponse(responseCode = "200", description = "Driver assignments retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Driver assignments retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or @vehicleAssignmentService.canAccessDriverAssignments(authentication.name, #driverId)")
     public ResponseEntity<ApiResponse<List<VehicleAssignmentResponse>>> getDriverAssignments(
             @PathVariable @Parameter(description = "Driver ID") UUID driverId,
@@ -98,7 +98,7 @@ public class VehicleAssignmentController {
      */
     @GetMapping("/vehicle/{vehicleId}")
     @Operation(summary = "Get vehicle assignments", description = "Retrieve all assignments for a specific vehicle")
-    @SwaggerApiResponse(responseCode = "200", description = "Vehicle assignments retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Vehicle assignments retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
     public ResponseEntity<ApiResponse<List<VehicleAssignmentResponse>>> getVehicleAssignments(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
@@ -124,7 +124,7 @@ public class VehicleAssignmentController {
      */
     @GetMapping("/active")
     @Operation(summary = "Get active assignments", description = "Retrieve all currently active assignments for the company")
-    @SwaggerApiResponse(responseCode = "200", description = "Active assignments retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Active assignments retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<List<VehicleAssignmentResponse>>> getActiveAssignments(
             Authentication authentication) {
@@ -149,8 +149,8 @@ public class VehicleAssignmentController {
      */
     @PostMapping("/{assignmentId}/terminate")
     @Operation(summary = "Terminate assignment", description = "Terminate an active assignment and notify User Service")
-    @SwaggerApiResponse(responseCode = "200", description = "Assignment terminated successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Assignment not found")
+    @ApiResponse(responseCode = "200", description = "Assignment terminated successfully")
+    @ApiResponse(responseCode = "404", description = "Assignment not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> terminateAssignment(
             @PathVariable @Parameter(description = "Assignment ID") UUID assignmentId,
@@ -177,8 +177,8 @@ public class VehicleAssignmentController {
      */
     @PostMapping("/{assignmentId}/check-in")
     @Operation(summary = "Check-in assignment", description = "Check-in driver for vehicle usage")
-    @SwaggerApiResponse(responseCode = "200", description = "Assignment checked in successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Assignment not found")
+    @ApiResponse(responseCode = "200", description = "Assignment checked in successfully")
+    @ApiResponse(responseCode = "404", description = "Assignment not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or @vehicleAssignmentService.canCheckInAssignment(authentication.name, #assignmentId)")
     public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> checkInAssignment(
             @PathVariable @Parameter(description = "Assignment ID") UUID assignmentId,
@@ -205,8 +205,8 @@ public class VehicleAssignmentController {
      */
     @PostMapping("/{assignmentId}/check-out")
     @Operation(summary = "Check-out assignment", description = "Check-out driver from vehicle usage")
-    @SwaggerApiResponse(responseCode = "200", description = "Assignment checked out successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Assignment not found")
+    @ApiResponse(responseCode = "200", description = "Assignment checked out successfully")
+    @ApiResponse(responseCode = "404", description = "Assignment not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or @vehicleAssignmentService.canCheckOutAssignment(authentication.name, #assignmentId)")
     public ResponseEntity<ApiResponse<VehicleAssignmentResponse>> checkOutAssignment(
             @PathVariable @Parameter(description = "Assignment ID") UUID assignmentId,

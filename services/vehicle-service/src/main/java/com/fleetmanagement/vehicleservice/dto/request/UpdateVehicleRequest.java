@@ -3,10 +3,6 @@ package com.fleetmanagement.vehicleservice.dto.request;
 import com.fleetmanagement.vehicleservice.domain.enums.VehicleCategory;
 import com.fleetmanagement.vehicleservice.domain.enums.VehicleStatus;
 import com.fleetmanagement.vehicleservice.domain.enums.FuelType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -15,14 +11,7 @@ import java.util.Map;
 
 /**
  * Update Vehicle Request DTO
- *
- * This class represents the data required to update an existing vehicle.
- * All fields are optional - only provide the fields you want to update.
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UpdateVehicleRequest {
 
     @Size(max = 255, message = "Vehicle name must not exceed 255 characters")
@@ -76,4 +65,65 @@ public class UpdateVehicleRequest {
     private String notes;
 
     private Map<String, Object> customFields;
+
+    // Constructors
+    public UpdateVehicleRequest() {}
+
+    // Getters and Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getLicensePlate() { return licensePlate; }
+    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
+
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
+
+    public VehicleCategory getVehicleCategory() { return vehicleCategory; }
+    public void setVehicleCategory(VehicleCategory vehicleCategory) { this.vehicleCategory = vehicleCategory; }
+
+    public FuelType getFuelType() { return fuelType; }
+    public void setFuelType(FuelType fuelType) { this.fuelType = fuelType; }
+
+    public String getEngineSize() { return engineSize; }
+    public void setEngineSize(String engineSize) { this.engineSize = engineSize; }
+
+    public String getTransmission() { return transmission; }
+    public void setTransmission(String transmission) { this.transmission = transmission; }
+
+    public Integer getSeatingCapacity() { return seatingCapacity; }
+    public void setSeatingCapacity(Integer seatingCapacity) { this.seatingCapacity = seatingCapacity; }
+
+    public BigDecimal getCargoCapacity() { return cargoCapacity; }
+    public void setCargoCapacity(BigDecimal cargoCapacity) { this.cargoCapacity = cargoCapacity; }
+
+    public BigDecimal getGrossWeight() { return grossWeight; }
+    public void setGrossWeight(BigDecimal grossWeight) { this.grossWeight = grossWeight; }
+
+    public Integer getCurrentMileage() { return currentMileage; }
+    public void setCurrentMileage(Integer currentMileage) { this.currentMileage = currentMileage; }
+
+    public String getHomeLocation() { return homeLocation; }
+    public void setHomeLocation(String homeLocation) { this.homeLocation = homeLocation; }
+
+    public String getInsuranceProvider() { return insuranceProvider; }
+    public void setInsuranceProvider(String insuranceProvider) { this.insuranceProvider = insuranceProvider; }
+
+    public String getInsurancePolicyNumber() { return insurancePolicyNumber; }
+    public void setInsurancePolicyNumber(String insurancePolicyNumber) { this.insurancePolicyNumber = insurancePolicyNumber; }
+
+    public LocalDate getInsuranceExpiryDate() { return insuranceExpiryDate; }
+    public void setInsuranceExpiryDate(LocalDate insuranceExpiryDate) { this.insuranceExpiryDate = insuranceExpiryDate; }
+
+    public LocalDate getRegistrationExpiryDate() { return registrationExpiryDate; }
+    public void setRegistrationExpiryDate(LocalDate registrationExpiryDate) { this.registrationExpiryDate = registrationExpiryDate; }
+
+    public VehicleStatus getStatus() { return status; }
+    public void setStatus(VehicleStatus status) { this.status = status; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public Map<String, Object> getCustomFields() { return customFields; }
+    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
 }

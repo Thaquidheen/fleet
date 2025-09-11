@@ -52,9 +52,9 @@ public class VehicleController {
      */
     @PostMapping
     @Operation(summary = "Create vehicle", description = "Register a new vehicle with automatic company limit validation")
-    @SwaggerApiResponse(responseCode = "201", description = "Vehicle created successfully")
-    @SwaggerApiResponse(responseCode = "400", description = "Invalid vehicle data or company limit exceeded")
-    @SwaggerApiResponse(responseCode = "409", description = "Vehicle already exists (VIN or license plate conflict)")
+    @ApiResponse(responseCode = "201", description = "Vehicle created successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid vehicle data or company limit exceeded")
+    @ApiResponse(responseCode = "409", description = "Vehicle already exists (VIN or license plate conflict)")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<VehicleResponse>> createVehicle(
             @Valid @RequestBody CreateVehicleRequest request,
@@ -81,7 +81,7 @@ public class VehicleController {
      */
     @GetMapping
     @Operation(summary = "Get vehicles", description = "Retrieve all vehicles for the company with pagination")
-    @SwaggerApiResponse(responseCode = "200", description = "Vehicles retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Vehicles retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
     public ResponseEntity<ApiResponse<Page<VehicleResponse>>> getVehicles(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
@@ -113,8 +113,8 @@ public class VehicleController {
      */
     @GetMapping("/{vehicleId}")
     @Operation(summary = "Get vehicle by ID", description = "Retrieve vehicle information by ID")
-    @SwaggerApiResponse(responseCode = "200", description = "Vehicle found")
-    @SwaggerApiResponse(responseCode = "404", description = "Vehicle not found")
+    @ApiResponse(responseCode = "200", description = "Vehicle found")
+    @ApiResponse(responseCode = "404", description = "Vehicle not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
     public ResponseEntity<ApiResponse<VehicleResponse>> getVehicleById(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
@@ -140,9 +140,9 @@ public class VehicleController {
      */
     @PutMapping("/{vehicleId}")
     @Operation(summary = "Update vehicle", description = "Update vehicle information")
-    @SwaggerApiResponse(responseCode = "200", description = "Vehicle updated successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Vehicle not found")
-    @SwaggerApiResponse(responseCode = "400", description = "Invalid vehicle data")
+    @ApiResponse(responseCode = "200", description = "Vehicle updated successfully")
+    @ApiResponse(responseCode = "404", description = "Vehicle not found")
+    @ApiResponse(responseCode = "400", description = "Invalid vehicle data")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<VehicleResponse>> updateVehicle(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
@@ -170,8 +170,8 @@ public class VehicleController {
      */
     @DeleteMapping("/{vehicleId}")
     @Operation(summary = "Delete vehicle", description = "Delete/retire vehicle from fleet")
-    @SwaggerApiResponse(responseCode = "204", description = "Vehicle deleted successfully")
-    @SwaggerApiResponse(responseCode = "404", description = "Vehicle not found")
+    @ApiResponse(responseCode = "204", description = "Vehicle deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Vehicle not found")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<Void>> deleteVehicle(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
@@ -197,7 +197,7 @@ public class VehicleController {
      */
     @GetMapping("/{vehicleId}/available-drivers")
     @Operation(summary = "Get available drivers", description = "Get list of available drivers for vehicle assignment")
-    @SwaggerApiResponse(responseCode = "200", description = "Available drivers retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Available drivers retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<List<DriverResponse>>> getAvailableDrivers(
             @PathVariable @Parameter(description = "Vehicle ID") UUID vehicleId,
@@ -224,7 +224,7 @@ public class VehicleController {
      */
     @GetMapping("/statistics")
     @Operation(summary = "Get vehicle statistics", description = "Get comprehensive vehicle statistics for the company")
-    @SwaggerApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('VIEWER')")
     public ResponseEntity<ApiResponse<VehicleStatisticsResponse>> getVehicleStatistics(
             Authentication authentication) {
@@ -249,7 +249,7 @@ public class VehicleController {
      */
     @GetMapping("/search")
     @Operation(summary = "Search vehicles", description = "Search vehicles with various filters")
-    @SwaggerApiResponse(responseCode = "200", description = "Search results retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Search results retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER') or hasRole('DRIVER') or hasRole('VIEWER')")
     public ResponseEntity<ApiResponse<Page<VehicleResponse>>> searchVehicles(
             @Parameter(description = "Vehicle name or license plate") @RequestParam(required = false) String query,
@@ -280,7 +280,7 @@ public class VehicleController {
      */
     @GetMapping("/drivers")
     @Operation(summary = "Get company drivers", description = "Get all drivers in the company for vehicle assignment")
-    @SwaggerApiResponse(responseCode = "200", description = "Company drivers retrieved successfully")
+    @ApiResponse(responseCode = "200", description = "Company drivers retrieved successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<List<DriverResponse>>> getCompanyDrivers(
             Authentication authentication) {
@@ -305,7 +305,7 @@ public class VehicleController {
      */
     @GetMapping("/validate-creation")
     @Operation(summary = "Validate vehicle creation", description = "Check if company can add more vehicles")
-    @SwaggerApiResponse(responseCode = "200", description = "Validation completed successfully")
+    @ApiResponse(responseCode = "200", description = "Validation completed successfully")
     @PreAuthorize("hasRole('COMPANY_ADMIN') or hasRole('FLEET_MANAGER')")
     public ResponseEntity<ApiResponse<VehicleCreationValidationResponse>> validateVehicleCreation(
             Authentication authentication) {

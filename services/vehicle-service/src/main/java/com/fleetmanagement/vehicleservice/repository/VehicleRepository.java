@@ -248,4 +248,32 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID>, JpaSpec
     List<Vehicle> findVehiclesPurchasedInPeriod(@Param("companyId") UUID companyId,
                                                 @Param("startDate") LocalDate startDate,
                                                 @Param("endDate") LocalDate endDate);
+
+
+    @Query("SELECT v FROM Vehicle v WHERE v.companyId = :companyId AND " +
+            "(LOWER(v.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(v.licensePlate) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(v.make) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(v.model) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
+            "(:vehicleType IS NULL OR v.vehicleType = :vehicleType) AND " +
+            "(:status IS NULL OR v.status = :status)")
+    Page<Vehicle> findByCompanyIdAndSearchCriteria(
+            @Param("companyId") UUID companyId,
+            @Param("query") String query,
+            @Param("vehicleType") VehicleType vehicleType,
+            @Param("status") VehicleStatus status,
+            Pageable pageable
+    );
+
+    @Query("SELECT v FROM Vehicle v WHERE v.companyId = :companyId AND " +
+            "(:vehicleType IS NULL OR v.vehicleType = :vehicleType) AND " +
+            "(:status IS NULL OR v.status = :status)")
+    Page<Vehicle> findByCompanyIdAndFilters(
+            @Param("companyId") UUID companyId,
+            @Param("vehicleType") VehicleType vehicleType,
+            @Param("status") VehicleStatus status,
+            Pageable pageable
+    );
+
+
 }

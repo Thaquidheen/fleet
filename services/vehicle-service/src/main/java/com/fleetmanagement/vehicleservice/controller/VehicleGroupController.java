@@ -6,7 +6,7 @@ import com.fleetmanagement.vehicleservice.dto.response.*;
 import com.fleetmanagement.vehicleservice.service.VehicleGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import com.fleetmanagement.vehicleservice.dto.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
