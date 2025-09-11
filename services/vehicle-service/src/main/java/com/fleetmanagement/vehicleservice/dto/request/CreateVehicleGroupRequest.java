@@ -41,7 +41,7 @@ public class CreateVehicleGroupRequest {
 
     private UUID managerId;
 
-    private Map<String, Object> customFields;
+//    private Map<String, Object> customFields;
 
     // Explicit getters for fields that were causing compilation errors
     public Integer getSortOrder() { return sortOrder; }
@@ -56,6 +56,6 @@ public class CreateVehicleGroupRequest {
     public UUID getManagerId() { return managerId; }
     public void setManagerId(UUID managerId) { this.managerId = managerId; }
 
-    public Map<String, Object> getCustomFields() { return customFields; }
-    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
+//    public Map<String, Object> getCustomFields() { return customFields; }
+//    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
 }

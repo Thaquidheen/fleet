@@ -64,7 +64,7 @@ public class UpdateVehicleRequest {
     @Size(max = 2000, message = "Notes must not exceed 2000 characters")
     private String notes;
 
-    private Map<String, Object> customFields;
+//    private Map<String, Object> customFields;
 
     // Constructors
     public UpdateVehicleRequest() {}
@@ -124,6 +124,6 @@ public class UpdateVehicleRequest {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    public Map<String, Object> getCustomFields() { return customFields; }
-    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
+//    public Map<String, Object> getCustomFields() { return customFields; }
+//    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
 }

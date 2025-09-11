@@ -111,7 +111,7 @@ public class CreateVehicleRequest {
     @Size(max = 2000, message = "Notes must not exceed 2000 characters")
     private String notes;
 
-    private Map<String, Object> customFields;
+//    private Map<String, Object> customFields;
 
     // Group assignments
     private UUID primaryGroupId;

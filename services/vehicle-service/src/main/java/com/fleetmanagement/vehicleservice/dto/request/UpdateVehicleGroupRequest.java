@@ -31,7 +31,7 @@ public class UpdateVehicleGroupRequest {
 
     private UUID managerId;
 
-    private Map<String, Object> customFields;
+//    private Map<String, Object> customFields;
 
     private Integer sortOrder;
 

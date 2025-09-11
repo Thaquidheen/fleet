@@ -86,7 +86,7 @@ public class VehicleGroupService {
                 .maxVehicles(request.getMaxVehicles())
                 .location(request.getLocation())
                 .managerId(request.getManagerId())
-                .customFields(request.getCustomFields())
+//                .customFields(request.getCustomFields())
                 .sortOrder(sortOrder)
                 .isActive(true)
                 .createdBy(createdBy)
@@ -409,9 +409,9 @@ public class VehicleGroupService {
         if (request.getIsActive() != null) {
             vehicleGroup.setActive(request.getIsActive());
         }
-        if (request.getCustomFields() != null) {
-            vehicleGroup.setCustomFields(request.getCustomFields());
-        }
+//        if (request.getCustomFields() != null) {
+//            vehicleGroup.setCustomFields(request.getCustomFields());
+//        }
     }
 
 }

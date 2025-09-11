@@ -36,5 +36,5 @@ public class UpdateAssignmentRequest {
     @Size(max = 2000, message = "Notes must not exceed 2000 characters")
     private String notes;
 
-    private Map<String, Object> restrictions;
+//    private Map<String, Object> restrictions;
 }

@@ -11,7 +11,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,7 @@ public class VehicleGroup {
     @Builder.Default
     private GroupType groupType = GroupType.CUSTOM;
 
+
     // Group Configuration
     @Column(name = "max_vehicles")
     @Min(value = 0, message = "Max vehicles must be non-negative")
@@ -96,8 +98,7 @@ public class VehicleGroup {
     @Column(name = "manager_id")
     private UUID managerId;
 
-    @Column(name = "custom_fields", columnDefinition = "jsonb")
-    private Map<String, Object> customFields;
+
 
     // Many-to-Many relationship with vehicles
     @OneToMany(mappedBy = "vehicleGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
