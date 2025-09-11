@@ -30,4 +30,5 @@ public class PagedResponse<T> {
     private int numberOfElements;
     private String sortBy;
     private String sortDirection;
+    boolean empty;
 }

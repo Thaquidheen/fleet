@@ -8,18 +8,21 @@ import com.fleetmanagement.vehicleservice.dto.response.*;
 import com.fleetmanagement.vehicleservice.exception.*;
 import com.fleetmanagement.vehicleservice.repository.VehicleGroupRepository;
 import org.slf4j.Logger;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import jakarta.persistence.criteria.Predicate;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -220,10 +223,47 @@ public class VehicleGroupService {
                         .build())
                 .collect(Collectors.toList());
     }
+    private Specification<VehicleGroup> createVehicleGroupSpecification(VehicleGroupSearchRequest req, UUID companyId) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("companyId"), companyId));
 
+            if (req != null) {
+                if (StringUtils.hasText(req.getName())) {
+                    predicates.add(cb.like(cb.lower(root.get("name")), "%" + req.getName().toLowerCase() + "%"));
+                }
+                if (req.getGroupType() != null) {
+                    predicates.add(cb.equal(root.get("groupType"), req.getGroupType()));
+                }
+                if (req.getParentGroupId() != null) {
+                    predicates.add(cb.equal(root.get("parentGroup").get("id"), req.getParentGroupId()));
+                }
+                if (req.getManagerId() != null) {
+                    predicates.add(cb.equal(root.get("managerId"), req.getManagerId()));
+                }
+                if (req.getIsActive() != null) {
+                    predicates.add(cb.equal(root.get("isActive"), req.getIsActive()));
+                }
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+    private VehicleGroupResponse mapToVehicleGroupResponse(VehicleGroup entity) {
+        if (entity == null) return null;
+        return VehicleGroupResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .companyId(entity.getCompanyId())
+                .parentGroupId(entity.getParentGroup() != null ? entity.getParentGroup().getId() : null)
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
     /**
      * Search vehicle groups with criteria
      */
+
+
     public PagedResponse<VehicleGroupResponse> searchVehicleGroups(VehicleGroupSearchRequest searchRequest, UUID companyId, Pageable pageable) {
         logger.debug("Searching vehicle groups for company: {} with criteria", companyId);
 
@@ -313,11 +353,16 @@ public class VehicleGroupService {
             typeDistribution.put((GroupType) row[0], ((Number) row[1]).intValue());
         }
 
+        // Derive vehiclesByGroupType (example uses same distribution; replace with real vehicle counts if available)
+        Map<String, Integer> vehiclesByGroupType = typeDistribution.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
+
         return VehicleGroupStatisticsResponse.builder()
                 .companyId(companyId)
                 .totalActiveGroups((int) activeGroupsCount)
-                .totalRootGroups((int) rootGroupsCount)
+                .rootGroups((int) rootGroupsCount)
                 .groupsByType(typeDistribution)
+                .vehiclesByGroupType(vehiclesByGroupType)
                 .generatedAt(java.time.LocalDateTime.now())
                 .build();
     }

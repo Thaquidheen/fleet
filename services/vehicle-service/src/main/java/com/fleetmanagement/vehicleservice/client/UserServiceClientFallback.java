@@ -1,9 +1,8 @@
 package com.fleetmanagement.vehicleservice.client;
 
-import com.fleetmanagement.vehicleservice.client.UserServiceClient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
@@ -15,44 +14,37 @@ public class UserServiceClientFallback implements UserServiceClient {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceClientFallback.class);
 
     @Override
-    public ResponseEntity<DriverValidationResponse> validateDriver(UUID userId, UUID companyId) {
-        logger.warn("User Service unavailable - using fallback for driver validation: {}", userId);
-
-        DriverValidationResponse fallbackResponse = new DriverValidationResponse();
-        fallbackResponse.setValid(false);
-        fallbackResponse.setAvailable(false);
-        fallbackResponse.setUnavailabilityReason("User Service temporarily unavailable");
-
-        return ResponseEntity.ok(fallbackResponse);
+    public List<DriverResponse> getAvailableDrivers(UUID companyId) {
+        logger.warn("Fallback: getAvailableDrivers called for company: {}", companyId);
+        return Collections.emptyList();
     }
 
     @Override
-    public ResponseEntity<List<DriverResponse>> getAvailableDrivers(UUID companyId) {
-        logger.warn("User Service unavailable - returning empty driver list for company: {}", companyId);
-        return ResponseEntity.ok(Collections.emptyList());
+    public List<DriverResponse> getCompanyDrivers(UUID companyId) {
+        logger.warn("Fallback: getCompanyDrivers called for company: {}", companyId);
+        return Collections.emptyList();
     }
 
     @Override
-    public ResponseEntity<Void> notifyDriverAssignment(UUID userId, DriverAssignmentNotification notification) {
-        logger.warn("User Service unavailable - could not notify driver assignment: {}", userId);
-        return ResponseEntity.ok().build();
+    public void notifyDriverAssignment(UUID driverId, DriverAssignmentNotification notification) {
+        logger.warn("Fallback: notifyDriverAssignment called for driver: {}", driverId);
     }
 
     @Override
-    public ResponseEntity<Void> notifyDriverUnassignment(UUID userId, UUID vehicleId) {
-        logger.warn("User Service unavailable - could not notify driver unassignment: {}", userId);
-        return ResponseEntity.ok().build();
+    public void notifyDriverUnassignment(UUID driverId, UUID vehicleId) {
+        logger.warn("Fallback: notifyDriverUnassignment called for driver: {} and vehicle: {}", driverId, vehicleId);
     }
 
     @Override
-    public ResponseEntity<UserResponse> getUserById(UUID userId) {
-        logger.warn("User Service unavailable - returning null for user: {}", userId);
-        return ResponseEntity.notFound().build();
+    public DriverValidationResponse validateDriver(UUID userId, UUID companyId) {
+        logger.warn("Fallback: validateDriver called for user: {} and company: {}", userId, companyId);
+        DriverValidationResponse response = new DriverValidationResponse();
+        response.setValid(false);
+        response.setAvailable(false);
+        response.setMessage("User service unavailable");
+        response.setUnavailabilityReason("Service temporarily unavailable");
+        return response;
     }
 
-    @Override
-    public ResponseEntity<List<DriverResponse>> getCompanyDrivers(UUID companyId) {
-        logger.warn("User Service unavailable - returning empty driver list for company: {}", companyId);
-        return ResponseEntity.ok(Collections.emptyList());
-    }
+
 }

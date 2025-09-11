@@ -209,7 +209,8 @@ public class VehicleController {
         UUID companyId = getCompanyIdFromAuth(authentication);
 
         // Get available drivers from User Service
-        List<DriverResponse> drivers = userServiceClient.getAvailableDrivers(companyId).getBody();
+        List<DriverResponse> drivers = userServiceClient.getCompanyDrivers(companyId);
+
 
         VehicleApiResponse<List<DriverResponse>> response = VehicleApiResponse.<List<DriverResponse>>builder()
                 .success(true)
@@ -290,7 +291,8 @@ public class VehicleController {
 
         UUID companyId = getCompanyIdFromAuth(authentication);
 
-        List<DriverResponse> drivers = userServiceClient.getCompanyDrivers(companyId).getBody();
+        List<DriverResponse> drivers = userServiceClient.getCompanyDrivers(companyId);
+
 
         VehicleApiResponse<List<DriverResponse>> response = VehicleApiResponse.<List<DriverResponse>>builder()
                 .success(true)

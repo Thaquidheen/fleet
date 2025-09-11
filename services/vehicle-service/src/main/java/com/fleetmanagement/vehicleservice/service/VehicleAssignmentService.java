@@ -15,15 +15,20 @@ import com.fleetmanagement.vehicleservice.exception.VehicleNotFoundException;
 import com.fleetmanagement.vehicleservice.repository.VehicleAssignmentRepository;
 import com.fleetmanagement.vehicleservice.repository.VehicleRepository;
 import org.slf4j.Logger;
+
+
+
+import java.util.List;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+
 import java.util.UUID;
 
 @Service
@@ -99,28 +104,26 @@ public class VehicleAssignmentService {
         try {
             logger.debug("Validating driver availability: {} for company: {}", driverId, companyId);
 
-            DriverValidationResponse validation = userServiceClient.validateDriver(driverId, companyId).getBody();
+            DriverValidationResponse validation = userServiceClient.validateDriver(driverId, companyId);
 
             if (validation == null) {
                 throw new DriverNotAvailableException("Unable to validate driver availability");
             }
-
             if (!validation.isValid()) {
-                String errors = validation.getValidationErrors() != null ?
-                        String.join(", ", validation.getValidationErrors()) : "Driver validation failed";
+                String errors = validation.getValidationErrors() != null
+                        ? String.join(", ", validation.getValidationErrors())
+                        : "Driver validation failed";
                 throw new DriverNotAvailableException("Driver validation failed: " + errors);
             }
-
             if (!validation.isAvailable()) {
-                String reason = validation.getUnavailabilityReason() != null ?
-                        validation.getUnavailabilityReason() : "Driver is not available";
+                String reason = validation.getUnavailabilityReason() != null
+                        ? validation.getUnavailabilityReason()
+                        : "Driver is not available";
                 throw new DriverNotAvailableException("Driver not available: " + reason);
             }
-
             logger.info("Driver availability validated successfully: {}", driverId);
-
         } catch (DriverNotAvailableException e) {
-            throw e; // Re-throw driver availability exceptions
+            throw e;
         } catch (Exception e) {
             logger.error("Failed to validate driver availability for driver: {}", driverId, e);
             throw new DriverNotAvailableException("Unable to validate driver availability: " + e.getMessage());
@@ -180,8 +183,9 @@ public class VehicleAssignmentService {
             notification.setCompanyId(vehicle.getCompanyId());
             notification.setAssignmentStartDate(assignment.getStartDate());
             notification.setAssignmentEndDate(assignment.getEndDate());
-            notification.setAssignmentType(assignment.getAssignmentType().name());
-            notification.setNotes(assignment.getNotes());
+            if (assignment.getAssignmentType() != null) {
+                notification.setAssignmentType(assignment.getAssignmentType().name());
+            }
 
             userServiceClient.notifyDriverAssignment(driverId, notification);
             logger.info("Driver assignment notification sent successfully: {}", driverId);
@@ -338,8 +342,8 @@ public class VehicleAssignmentService {
                 .status(assignment.getStatus())
                 .startDate(assignment.getStartDate())
                 .endDate(assignment.getEndDate())
-                .checkInTime(assignment.getCheckInTime())
-                .checkOutTime(assignment.getCheckOutTime())
+                .lastCheckIn(assignment.getCheckInTime())
+                .lastCheckOut(assignment.getCheckOutTime())
                 .notes(assignment.getNotes())
                 .assignedBy(assignment.getAssignedBy())
                 .createdAt(assignment.getCreatedAt())

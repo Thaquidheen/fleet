@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -209,12 +210,26 @@ public class VehicleGroupController {
 
         return ResponseEntity.ok(response);
     }
+    private UUID getCompanyIdFromAuth(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            // Assuming the company ID is stored in the authentication
+            // This implementation depends on your security configuration
+            return UUID.fromString(userDetails.getAuthorities().stream()
+                    .filter(auth -> auth.getAuthority().startsWith("COMPANY_"))
+                    .findFirst()
+                    .map(auth -> auth.getAuthority().substring(8))
+                    .orElseThrow(() -> new IllegalStateException("User is not associated with any company")));
+        }
+        throw new IllegalStateException("Invalid authentication");
+    }
+    // File: `services/vehicle-service/src/main/java/com/fleetmanagement/vehicleservice/controller/VehicleGroupController.java`
+    private UUID getUserIdFromAuth(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+            // Adjust if username is not a UUID
+            return UUID.fromString(userDetails.getUsername());
+        }
+        throw new IllegalStateException("Invalid authentication");
+    }
 }
 
-    /**
-     * Get complete group hierarchy
-     */
-//    @GetMapping("/hierarchy")
-//    @Operation(summary = "Get group hierarchy", description = "Retrieve complete group hierarchy for the company")
-//    @ApiResponse(responseCode = "200", description = "Group hierarchy retrieved successfully")
-//    @PreAuthorize("hasRole('

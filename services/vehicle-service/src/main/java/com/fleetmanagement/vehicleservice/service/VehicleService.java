@@ -277,7 +277,7 @@ public class VehicleService {
                 response.setRemainingSlots(validation.getRemainingSlots());
                 response.setCurrentVehicles(validation.getCurrentVehicles());
                 response.setMaxVehicles(validation.getMaxVehicles());
-                response.setSubscriptionPlan(validation.getSubscriptionPlan());
+//                response.setSubscriptionPlan(validation.getSubscriptionPlan());
             } else {
                 response.setCanCreateVehicle(false);
                 response.setReason("Unable to validate vehicle limits");

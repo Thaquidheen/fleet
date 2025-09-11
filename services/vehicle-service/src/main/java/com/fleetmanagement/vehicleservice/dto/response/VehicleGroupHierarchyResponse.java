@@ -23,8 +23,9 @@ public class VehicleGroupHierarchyResponse {
     private String rootGroupName;
     private List<VehicleGroupResponse> rootGroups;
     private int totalGroups;
-
+    private UUID parentGroupId;
     private int totalLevels;
     private int totalVehicles;
     private UUID companyId;
+    private Integer level;
 }

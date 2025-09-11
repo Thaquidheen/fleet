@@ -32,6 +32,7 @@ public enum AssignmentType {
         return this != PERMANENT;
     }
 
+
     public boolean requiresShiftTimes() {
         return this == SHIFT || this == ROTATION;
     }

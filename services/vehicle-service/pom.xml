@@ -5,27 +5,45 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Parent POM Reference -->
+    <!-- FIXED: Use Spring Boot parent directly to avoid plugin conflicts -->
     <parent>
-        <groupId>com.fleetmanagement</groupId>
-        <artifactId>fleet-management-system</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.0</version>
+        <relativePath/>
     </parent>
 
     <!-- Module Information -->
+    <groupId>com.fleetmanagement</groupId>
     <artifactId>vehicle-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Vehicle Service</name>
     <description>Fleet Management Vehicle Operations Service</description>
 
     <!-- Properties -->
     <properties>
-        <start-class>com.fleetmanagement.vehicleservice.VehicleServiceApplication</start-class>
-        <jjwt.version>0.11.5</jjwt.version>
-        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <java.version>17</java.version>
+        <spring-cloud.version>2023.0.0</spring-cloud.version>
+        <lombok.version>1.18.30</lombok.version>
+        <jjwt.version>0.12.3</jjwt.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
         <springdoc.version>2.2.0</springdoc.version>
+        <flyway.version>9.22.3</flyway.version>
     </properties>
+
+    <!-- Spring Cloud Dependencies -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <!-- Dependencies -->
     <dependencies>
@@ -34,7 +52,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -51,6 +68,16 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- Microservices Integration -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -62,52 +89,42 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
 
-
-
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
 
         <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
-        <!-- Database Migration -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <!-- Caching -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-
-        <!-- Event Streaming -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
-        <!-- Security -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-
-        <!-- JWT -->
+        <!-- Security & JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
             <version>${jjwt.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
@@ -119,7 +136,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -129,20 +146,31 @@
             <version>${commons-lang3.version}</version>
         </dependency>
 
-        <!-- Monitoring -->
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-
-        <!-- API Documentation -->
+        <!-- Documentation -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
 
-        <!-- Test Dependencies -->
+        <!-- JSON Processing -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!-- Monitoring -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- Testing Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -156,8 +184,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -166,43 +194,20 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.redis.testcontainers</groupId>
-            <artifactId>testcontainers-redis</artifactId>
-            <version>1.6.4</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
+    <!-- Build Configuration -->
     <build>
         <finalName>vehicle-service</finalName>
 
         <plugins>
-            <!-- Spring Boot Maven Plugin -->
+            <!-- FIXED: Spring Boot Maven Plugin with correct configuration -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.fleetmanagement.vehicleservice.VehicleServiceApplication</mainClass>
+                    <!-- FIXED: Correct exclude configuration -->
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -210,24 +215,16 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
-            <!-- Flyway Plugin for Database Migration -->
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>9.22.3</version>
-                <configuration>
-                    <url>jdbc:postgresql://localhost:5434/vehicle_service_db</url>
-                    <user>fleet_user</user>
-                    <password>fleet_password_2024</password>
-                    <schemas>
-                        <schema>public</schema>
-                    </schemas>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Compiler Plugin -->
+            <!-- Maven Compiler Plugin with Lombok annotation processing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -239,12 +236,67 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.30</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
+            <!-- Flyway Plugin for Database Migration -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5434/vehicle_service_db</url>
+                    <user>fleet_user</user>
+                    <password>fleet_password_2024</password>
+                    <schemas>
+                        <schema>public</schema>
+                    </schemas>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin for Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.2</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-</project>
 
+    <!-- Profiles -->
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>test</id>
+            <properties>
+                <spring.profiles.active>test</spring.profiles.active>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
+
+</project>

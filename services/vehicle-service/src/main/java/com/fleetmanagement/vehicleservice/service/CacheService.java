@@ -45,7 +45,13 @@ public class CacheService {
         this.cacheManager = cacheManager;
         this.redisTemplate = redisTemplate;
     }
+    public void clearVehicleGroupCache(UUID companyId) {
+        // Implementation for clearing vehicle group cache
+    }
 
+    public void clearVehicleCache(UUID vehicleId) {
+        // Implementation for clearing vehicle cache
+    }
     /**
      * Evict all vehicle-related caches for a company
      */

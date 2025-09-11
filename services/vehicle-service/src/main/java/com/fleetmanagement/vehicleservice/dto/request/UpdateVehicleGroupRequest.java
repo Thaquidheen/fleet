@@ -9,9 +9,6 @@ import jakarta.validation.constraints.*;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Update Vehicle Group Request DTO
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,4 +34,11 @@ public class UpdateVehicleGroupRequest {
     private Map<String, Object> customFields;
 
     private Integer sortOrder;
+
+    // FIXED: Added missing isActive field that was causing compilation errors
+    private Boolean isActive;
+
+    // Explicit getter for isActive field
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 }

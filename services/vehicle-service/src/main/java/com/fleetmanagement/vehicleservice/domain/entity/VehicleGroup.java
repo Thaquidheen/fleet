@@ -130,7 +130,9 @@ public class VehicleGroup {
         }
         return getCurrentVehicleCount() < maxVehicles;
     }
-
+    public void setActive(boolean active) {
+        this.isActive = active;
+    }
     /**
      * Get current vehicle count in this group
      */

@@ -6,11 +6,13 @@ package com.fleetmanagement.vehicleservice.domain.enums;
  * Represents different types of vehicle groups for fleet organization
  */
 public enum GroupType {
-    DEPARTMENT("Department", "Grouped by organizational department"),
-    REGION("Region", "Grouped by geographical region"),
-    TYPE("Type", "Grouped by vehicle type"),
-    CUSTOM("Custom", "Custom grouping criteria"),
-    LOCATION("Location", "Grouped by physical location");
+    DEPARTMENT("Department", "Departmental vehicle group"),
+    LOCATION("Location", "Location-based vehicle group"),
+    FLEET("Fleet", "Fleet-specific vehicle group"),
+    PROJECT("Project", "Project-based vehicle group"),
+    TEMPORARY("Temporary", "Temporary vehicle group"),
+    CUSTOM("Custom", "Custom vehicle group");
+
 
     private final String displayName;
     private final String description;
@@ -28,11 +30,4 @@ public enum GroupType {
         return description;
     }
 
-    public boolean supportsHierarchy() {
-        return this == DEPARTMENT || this == REGION || this == LOCATION;
-    }
-
-    public boolean isSystemDefined() {
-        return this == DEPARTMENT || this == REGION || this == TYPE || this == LOCATION;
-    }
 }

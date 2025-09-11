@@ -1,12 +1,6 @@
-
 package com.fleetmanagement.vehicleservice.exception;
 
-import java.util.List;
-
-/**
- * Vehicle Group Validation Exception
- */
-public class VehicleGroupValidationException extends VehicleServiceException {
+public class VehicleGroupValidationException extends RuntimeException {
     public VehicleGroupValidationException(String message) {
         super(message);
     }
