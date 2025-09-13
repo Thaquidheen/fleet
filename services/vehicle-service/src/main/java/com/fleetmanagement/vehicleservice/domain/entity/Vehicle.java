@@ -8,8 +8,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,7 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
+
 import java.util.UUID;
 
 /**
@@ -116,6 +115,35 @@ public class Vehicle {
 
     @Column(name = "purchase_date")
     private LocalDate purchaseDate;
+
+    @Column(name = "current_location_lat", precision = 10, scale = 8)
+    @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
+    @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
+    private BigDecimal currentLocationLat;
+
+    @Column(name = "current_location_lng", precision = 11, scale = 8)
+    @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
+    @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
+    private BigDecimal currentLocationLng;
+
+    @Column(name = "last_location_update")
+    private LocalDateTime lastLocationUpdate;
+
+
+
+    @Column(name = "last_service_date")
+    private LocalDate lastServiceDate;
+
+    @Column(name = "next_service_due_date")
+    private LocalDate nextServiceDueDate;
+
+    @Column(name = "service_interval_months")
+    @Builder.Default
+    private Integer serviceIntervalMonths = 6; // Default 6 months
+
+    @Column(name = "service_interval_mileage")
+    @Builder.Default
+    private Integer serviceIntervalMileage = 10000; // Default 10k miles
 
     @Column(name = "insurance_expiry_date")
     private LocalDate insuranceExpiryDate;

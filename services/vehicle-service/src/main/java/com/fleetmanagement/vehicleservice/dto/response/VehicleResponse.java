@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
+
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -42,7 +42,7 @@ public class VehicleResponse {
     private LocalDate insuranceExpiryDate;
     private LocalDate registrationExpiryDate;
     private String notes;
-    private Map<String, Object> customFields;
+//    private Map<String, Object> customFields;
     private UUID companyId;
     private UUID currentDriverId;
     private String currentDriverName;
@@ -95,7 +95,7 @@ public class VehicleResponse {
         public Builder insuranceExpiryDate(LocalDate insuranceExpiryDate) { response.insuranceExpiryDate = insuranceExpiryDate; return this; }
         public Builder registrationExpiryDate(LocalDate registrationExpiryDate) { response.registrationExpiryDate = registrationExpiryDate; return this; }
         public Builder notes(String notes) { response.notes = notes; return this; }
-        public Builder customFields(Map<String, Object> customFields) { response.customFields = customFields; return this; }
+//        public Builder customFields(Map<String, Object> customFields) { response.customFields = customFields; return this; }
         public Builder companyId(UUID companyId) { response.companyId = companyId; return this; }
         public Builder currentDriverId(UUID currentDriverId) { response.currentDriverId = currentDriverId; return this; }
         public Builder currentDriverName(String currentDriverName) { response.currentDriverName = currentDriverName; return this; }
@@ -193,8 +193,8 @@ public class VehicleResponse {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    public Map<String, Object> getCustomFields() { return customFields; }
-    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
+//    public Map<String, Object> getCustomFields() { return customFields; }
+//    public void setCustomFields(Map<String, Object> customFields) { this.customFields = customFields; }
 
     public UUID getCompanyId() { return companyId; }
     public void setCompanyId(UUID companyId) { this.companyId = companyId; }

@@ -5,7 +5,6 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- Parent POM Reference -->
 	<parent>
 		<groupId>com.fleetmanagement</groupId>
 		<artifactId>fleet-management-system</artifactId>
@@ -13,60 +12,22 @@
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
-	<!-- Module Information -->
 	<artifactId>eureka-server</artifactId>
 	<packaging>jar</packaging>
 	<name>Eureka Server</name>
 	<description>Service Discovery Server for Fleet Management System</description>
 
-	<!-- Properties -->
-	<properties>
-		<!-- CORRECTED: Match your actual package name -->
-		<start-class>com.fleetmanagement.eurekaserver.EurekaServerApplication</start-class>
-	</properties>
-
-	<!-- Dependencies -->
 	<dependencies>
-		<!-- Eureka Server -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
 		</dependency>
 
-		<!-- Spring Boot Actuator for Health Checks -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
-		<!-- Monitoring with Micrometer/Prometheus -->
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.15.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.15.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>2.15.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.15.3</version>
-		</dependency>
-
-		<!-- Testing Dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -74,17 +35,13 @@
 		</dependency>
 	</dependencies>
 
-	<!-- Build Configuration -->
 	<build>
 		<finalName>eureka-server</finalName>
-
 		<plugins>
-			<!-- Spring Boot Maven Plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<!-- EXPLICIT main class configuration -->
 					<mainClass>com.fleetmanagement.eurekaserver.EurekaServerApplication</mainClass>
 				</configuration>
 			</plugin>
