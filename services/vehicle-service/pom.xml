@@ -30,6 +30,7 @@
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <springdoc.version>2.2.0</springdoc.version>
         <flyway.version>9.22.3</flyway.version>
+<!--        <jackson.version>2.16.0</jackson.version>-->
     </properties>
 
     <!-- Spring Cloud Dependencies -->
@@ -132,6 +133,7 @@
             <scope>runtime</scope>
         </dependency>
 
+
         <!-- Utilities -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -182,6 +184,7 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
 
         <dependency>
             <groupId>org.testcontainers</groupId>

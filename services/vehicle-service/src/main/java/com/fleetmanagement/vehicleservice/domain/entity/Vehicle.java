@@ -134,6 +134,9 @@ public class Vehicle {
     @Column(name = "last_service_date")
     private LocalDate lastServiceDate;
 
+    @Column(name = "next_service_due_mileage")
+    private Integer nextServiceDueMileage;
+
     @Column(name = "next_service_due_date")
     private LocalDate nextServiceDueDate;
 
