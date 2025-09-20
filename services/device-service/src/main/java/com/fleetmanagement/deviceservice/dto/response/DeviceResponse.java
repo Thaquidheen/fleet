@@ -132,3 +132,4 @@ public class DeviceResponse {
         private Long totalDataPoints;
     }
 }
+

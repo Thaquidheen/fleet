@@ -272,3 +272,4 @@ external-services:
     url: http://user-service:8082
   payment-service:
     url: http://payment-service:8092
+

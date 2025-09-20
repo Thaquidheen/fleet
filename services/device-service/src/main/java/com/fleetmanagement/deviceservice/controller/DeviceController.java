@@ -1,6 +1,7 @@
 // services/device-service/src/main/java/com/fleetmanagement/deviceservice/controller/DeviceController.java
 package com.fleetmanagement.deviceservice.controller;
 
+import com.fleetmanagement.deviceservice.dto.DeviceResponse;
 import com.fleetmanagement.deviceservice.dto.request.RegisterDeviceRequest;
 import com.fleetmanagement.deviceservice.dto.request.AssignDeviceRequest;
 import com.fleetmanagement.deviceservice.dto.request.DeviceCommandRequest;
@@ -165,3 +166,4 @@ public class DeviceController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
+

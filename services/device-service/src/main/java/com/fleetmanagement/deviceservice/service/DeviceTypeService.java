@@ -103,3 +103,4 @@ public interface DeviceTypeService {
     Object getDeviceTypeStatistics();
 }
 
+

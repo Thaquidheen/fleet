@@ -55,3 +55,4 @@ public interface MobileDeviceService {
      */
     void updateLocationSettings(String deviceId, Integer updateInterval, Boolean backgroundTracking);
 }
+

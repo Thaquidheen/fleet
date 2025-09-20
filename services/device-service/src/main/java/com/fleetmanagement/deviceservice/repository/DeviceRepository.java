@@ -164,3 +164,4 @@ public interface DeviceRepository extends JpaRepository<Device, UUID> {
             "WHERE ss.isActive = true AND ss.billingCycleEnd <= :currentDate")
     List<Device> findDevicesForBilling(@Param("currentDate") LocalDateTime currentDate);
 }
+

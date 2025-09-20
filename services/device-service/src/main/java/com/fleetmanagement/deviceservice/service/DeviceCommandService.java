@@ -12,3 +12,4 @@ public interface DeviceCommandService {
     Page<CommandExecutionResponse> getDeviceCommands(UUID deviceId, Pageable pageable);
     CommandExecutionResponse getCommandStatus(UUID commandId);
 }
+

@@ -194,3 +194,4 @@ exec "$JAVA_HOME/bin/java" $JAVA_OPTS \
   -Dmaven.multiModuleProjectDirectory="$MAVEN_PROJECTBASEDIR" \
   org.apache.maven.wrapper.MavenWrapperMain "$@"
 
+

@@ -37,3 +37,4 @@ public class AssignDeviceRequest {
 
     private String notes;
 }
+

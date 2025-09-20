@@ -68,3 +68,4 @@ CREATE INDEX idx_device_health_check_time ON device_health_records(check_time);
 COMMENT ON TABLE mobile_devices IS 'Mobile phone devices used for tracking';
 COMMENT ON TABLE device_commands IS 'Commands sent to devices via Traccar';
 COMMENT ON TABLE device_health_records IS 'Device health monitoring data';
+

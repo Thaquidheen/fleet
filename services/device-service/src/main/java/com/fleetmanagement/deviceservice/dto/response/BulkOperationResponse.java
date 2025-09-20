@@ -44,3 +44,4 @@ public class BulkOperationResponse {
         private String details;
     }
 }
+

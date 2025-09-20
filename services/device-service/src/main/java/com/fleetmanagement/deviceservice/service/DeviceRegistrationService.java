@@ -46,3 +46,4 @@ public interface DeviceRegistrationService {
     void sendDeviceConfiguration(Device device);
 }
 
+

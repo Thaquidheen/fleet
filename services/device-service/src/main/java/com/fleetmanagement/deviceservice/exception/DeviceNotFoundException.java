@@ -14,3 +14,4 @@ public class DeviceNotFoundException extends DeviceServiceException {
         super(message);
     }
 }
+

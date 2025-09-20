@@ -72,3 +72,4 @@ public interface TraccarIntegrationService {
     void configureDeviceForBrand(Device device, DeviceBrand brand);
 }
 
+

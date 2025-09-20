@@ -42,3 +42,4 @@ public interface DeviceBillingService {
      */
     BillingSummaryResponse getBillingSummary(UUID companyId);
 }
+

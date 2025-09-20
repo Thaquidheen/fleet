@@ -291,3 +291,4 @@ public class Device {
         this.connectionStatus = ConnectionStatus.DISCONNECTED;
     }
 }
+

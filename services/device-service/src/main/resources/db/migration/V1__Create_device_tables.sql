@@ -64,3 +64,4 @@ COMMENT ON TABLE devices IS 'Main table for all GPS tracking devices';
 COMMENT ON COLUMN devices.device_id IS 'IMEI or unique device identifier';
 COMMENT ON COLUMN devices.traccar_id IS 'Reference to Traccar device ID';
 COMMENT ON COLUMN devices.configuration IS 'JSON configuration for device-specific settings';
+

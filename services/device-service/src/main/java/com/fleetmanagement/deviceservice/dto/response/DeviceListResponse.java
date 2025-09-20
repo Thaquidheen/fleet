@@ -53,3 +53,4 @@ public class DeviceListResponse {
         private Double totalMonthlySensorRevenue;
     }
 }
+

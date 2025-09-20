@@ -67,3 +67,4 @@ public interface SensorSubscriptionService {
     void validateSensorSubscriptionLimits(UUID companyId, SensorType sensorType);
 }
 
+

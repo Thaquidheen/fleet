@@ -91,3 +91,4 @@ INSERT INTO sensor_types (sensor_name, description, unit_of_measurement, data_ty
                                                                                                                ('BATTERY_VOLTAGE', 'Battery voltage monitoring', 'Volts', 'DECIMAL', 7.00),
                                                                                                                ('PANIC_BUTTON', 'Emergency panic button', 'Boolean', 'BOOLEAN', 20.00),
                                                                                                                ('CARGO_WEIGHT', 'Cargo weight monitoring', 'Kilograms', 'DECIMAL', 25.00);
+

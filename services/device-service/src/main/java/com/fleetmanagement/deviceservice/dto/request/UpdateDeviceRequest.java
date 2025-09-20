@@ -32,3 +32,4 @@ public class UpdateDeviceRequest {
 
     private String notes;
 }
+
