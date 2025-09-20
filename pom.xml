@@ -74,7 +74,7 @@
          <module>services/user-service</module>
          <module>services/company-service</module>
          <module>services/vehicle-service</module>
-        <!-- <module>services/device-service</module> -->
+         <module>services/device-service</module>
 
         <!-- Real-time Processing Services -->
         <!-- <module>services/location-service</module> -->
